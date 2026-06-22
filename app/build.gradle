@@ -3,6 +3,9 @@ plugins {
 }
 
 android {
+    // Redirigir la carpeta build a /tmp
+    project.layout.buildDirectory.set(file("/tmp/calculoestructural_build"))
+
     namespace 'com.diamon.civil'
     compileSdk {
         version = release(37) {
