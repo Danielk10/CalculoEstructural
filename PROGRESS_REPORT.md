@@ -1,0 +1,31 @@
+# Progress Report: Structural FEA Android Integration
+
+This document tracks the tasks completed and the current status of the project.
+
+## 1. Project Infrastructure & UI
+- [x] Initial research of project structure (Java, NDK, Layouts).
+- [x] Integration of **SceneView** dependency (v0.10.0) in `libs.versions.toml` and `app/build.gradle`.
+- [x] Updated `activity_main.xml` to include a 3-tab navigation (MODEL, TERMINAL, VIEWER).
+- [x] Integrated `SceneView` component for 3D visualization.
+- [x] Implemented tab-switching logic in `MainActivity.java`.
+
+## 2. 3D Engine & Converter (C++/NDK)
+- [x] Integrated **tinygltf** library (headers only) for GLB generation.
+- [x] Developed a C++ prototype for converting CalculiX `.frd` files to `.glb`.
+- [x] Implemented **Vertex Color Heatmap** logic (Blue-to-Red) based on FEA stress results.
+- [x] Integrated the converter into the Android NDK (`frd_converter.cpp`).
+- [x] Exposed the converter via JNI (`convertFrdToGlb`) in `CalculixExecutor.java`.
+- [x] Added support for TET4 (Tetrahedron) and TRIA3 (Triangle) elements.
+
+## 3. Data Pipeline & Logic
+- [x] Updated `runAnalysis` in `MainActivity.java` to trigger conversion automatically after simulation.
+- [x] Implemented dynamic loading of models from internal storage (`getFilesDir()`) instead of static assets.
+- [x] Added `cargarModeloExterno` helper to manage `ModelNode` and `Position` in Java.
+
+## 4. Validation & Testing
+- [x] Prototyped and verified `frd2glb` conversion in a Linux environment.
+- [x] Validated conversion logic with a realistic CalculiX-style `.frd` file.
+- [ ] Integration testing on Android device/emulator.
+
+---
+*Last updated: June 24, 2026*

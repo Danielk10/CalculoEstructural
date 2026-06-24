@@ -27,6 +27,9 @@ import com.diamon.civil.io.FileHelper;
 import com.diamon.civil.util.AssetHelper;
 import com.google.android.material.tabs.TabLayout;
 
+import io.github.sceneview.node.ModelNode;
+import io.github.sceneview.math.Position;
+
 import java.io.File;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -83,7 +86,17 @@ public class MainActivity extends AppCompatActivity {
         inpGenerator = new InpGenerator();
 
         setupUI();
+        setupSceneView();
         checkAndLoadAssets();
+    }
+
+    private void setupSceneView() {
+        binding.sceneView.setZNear(0.1f);
+        binding.sceneView.setZFar(1000.0f);
+        
+        // Aquí podrías cargar un modelo inicial si existiera
+        // ModelNode modelNode = new ModelNode(binding.sceneView.getEngine(), "models/sample.glb", true, 1.0f);
+        // binding.sceneView.addChild(modelNode);
     }
 
     @Override
@@ -97,12 +110,22 @@ public class MainActivity extends AppCompatActivity {
         binding.tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                if (tab.getPosition() == 0) {
-                    binding.layoutBasicUI.setVisibility(View.VISIBLE);
-                    binding.layoutConsole.setVisibility(View.GONE);
-                } else {
-                    binding.layoutBasicUI.setVisibility(View.GONE);
-                    binding.layoutConsole.setVisibility(View.VISIBLE);
+                switch (tab.getPosition()) {
+                    case 0:
+                        binding.layoutBasicUI.setVisibility(View.VISIBLE);
+                        binding.layoutConsole.setVisibility(View.GONE);
+                        binding.sceneView.setVisibility(View.GONE);
+                        break;
+                    case 1:
+                        binding.layoutBasicUI.setVisibility(View.GONE);
+                        binding.layoutConsole.setVisibility(View.VISIBLE);
+                        binding.sceneView.setVisibility(View.GONE);
+                        break;
+                    case 2:
+                        binding.layoutBasicUI.setVisibility(View.GONE);
+                        binding.layoutConsole.setVisibility(View.GONE);
+                        binding.sceneView.setVisibility(View.VISIBLE);
+                        break;
                 }
             }
             @Override
@@ -165,14 +188,43 @@ public class MainActivity extends AppCompatActivity {
                 
                 String result = calculixExecutor.executeCalculix("structural_simulation");
                 
+                // Convert FRD to GLB for 3D visualization
+                File frdFile = new File(getFilesDir(), "structural_simulation.frd");
+                File glbFile = new File(getFilesDir(), "structural_simulation.glb");
+                boolean converted = false;
+                if (frdFile.exists()) {
+                    converted = calculixExecutor.convertFrdToGlb(frdFile.getAbsolutePath(), glbFile.getAbsolutePath());
+                }
+
+                final boolean finalConverted = converted;
                 runOnUiThread(() -> {
                     binding.tvBasicResult.setText("ANALYSIS COMPLETE\n=================\n" + result);
                     binding.layoutBasicUI.post(() -> binding.layoutBasicUI.fullScroll(View.FOCUS_DOWN));
+                    
+                    if (finalConverted) {
+                        Toast.makeText(this, "3D Model Generated", Toast.LENGTH_SHORT).show();
+                        // Optional: automatically switch to VIEWER tab
+                        // binding.tabLayout.getTabAt(2).select();
+                        cargarModeloExterno(glbFile);
+                    }
                 });
             } catch (Exception e) {
                 runOnUiThread(() -> binding.tvBasicResult.setText("CRITICAL ERROR: " + e.getMessage()));
             }
         });
+    }
+
+    private void cargarModeloExterno(File file) {
+        if (file.exists()) {
+            ModelNode modelNode = new ModelNode(
+                    binding.sceneView.getEngine(),
+                    file,
+                    true,
+                    1.0f
+            );
+            binding.sceneView.addChild(modelNode);
+            modelNode.centerModel(new Position(0, 0, 0));
+        }
     }
 
     private void sendTerminalCommand() {

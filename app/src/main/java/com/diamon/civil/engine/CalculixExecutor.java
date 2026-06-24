@@ -16,6 +16,12 @@ public class CalculixExecutor {
     private final File workDir;
     private final File nativeLibDir;
 
+    static {
+        System.loadLibrary("calculoestructural");
+    }
+
+    public native boolean convertFrdToGlb(String inputPath, String outputPath);
+
     public CalculixExecutor(Context context) {
         this.workDir = context.getFilesDir();
         this.nativeLibDir = new File(context.getApplicationInfo().nativeLibraryDir);
