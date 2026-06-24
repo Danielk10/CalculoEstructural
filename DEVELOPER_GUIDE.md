@@ -21,9 +21,10 @@ boolean converted = calculixExecutor.convertFrdToGlb(frdFile.getPath(), glbFile.
 ```
 
 ### Key Technical Details:
+- **minSdkVersion:** Requires level 24 (Android 7.0) due to SceneView library constraints.
 - **Vertex Colors:** The converter maps Von Mises stress values to a RGB gradient (Blue = Low, Red = High).
 - **Element Support:** Currently supports `TET4` (3D Tetrahedrons) and `TRIA3` (2D Triangles).
-- **Storage:** Files are stored in `context.getFilesDir()`.
+- **Math Library:** Uses `dev.romainguy.kotlin.math.Float3` for 3D coordinates.
 
 ## 3. How to Use the 3D Viewer
 
@@ -36,6 +37,20 @@ boolean converted = calculixExecutor.convertFrdToGlb(frdFile.getPath(), glbFile.
 To load a specific model manually from code:
 ```java
 cargarModeloExterno(new File(getFilesDir(), "my_model.glb"));
+```
+
+Implementation details for loading:
+```java
+ModelNode modelNode = new ModelNode(
+        binding.sceneView.getEngine(),
+        file.getPath(),
+        true,
+        1.0f,
+        new Float3(0.0f, 0.0f, 0.0f),
+        null,
+        null
+);
+binding.sceneView.addChild(modelNode);
 ```
 
 ## 4. Maintenance (C++)

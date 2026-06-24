@@ -57,7 +57,25 @@ Para instalar y depurar la aplicación en un dispositivo conectado a través de 
     adb logcat *:S MainActivity:D
     ```
 
-## 4. Estructura de Código Nativo
+## 4. Estructura de Código Nativo y Visualización 3D
+
+El sistema utiliza **SceneView** para la renderización 3D, lo que requiere un `minSdkVersion` de **24**.
+
+### Implementación del Visor 3D:
+Para cargar modelos dinámicamente desde el código Java, se utiliza la clase `ModelNode` con la librería de matemáticas `Float3`:
+
+```java
+ModelNode modelNode = new ModelNode(
+        binding.sceneView.getEngine(),
+        file.getPath(),
+        true,
+        1.0f,
+        new Float3(0.0f, 0.0f, 0.0f),
+        null,
+        null
+);
+binding.sceneView.addChild(modelNode);
+```
 
 El código C++ nativo se encuentra en:
 - **[CMakeLists.txt](file:///home/danielpdiamon/CalculoEstructural/app/src/main/cpp/CMakeLists.txt)**: Configura la compilación de la librería dinámica `libcalculoestructural.so`.

@@ -28,7 +28,7 @@ import com.diamon.civil.util.AssetHelper;
 import com.google.android.material.tabs.TabLayout;
 
 import io.github.sceneview.node.ModelNode;
-import io.github.sceneview.math.Position;
+import dev.romainguy.kotlin.math.Float3;
 
 import java.io.File;
 import java.util.concurrent.ExecutorService;
@@ -91,8 +91,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupSceneView() {
-        binding.sceneView.setZNear(0.1f);
-        binding.sceneView.setZFar(1000.0f);
+        binding.sceneView.getCameraNode().setNearClipPlane(0.1f);
+        binding.sceneView.getCameraNode().setFarClipPlane(1000.0f);
         
         // Aquí podrías cargar un modelo inicial si existiera
         // ModelNode modelNode = new ModelNode(binding.sceneView.getEngine(), "models/sample.glb", true, 1.0f);
@@ -218,12 +218,15 @@ public class MainActivity extends AppCompatActivity {
         if (file.exists()) {
             ModelNode modelNode = new ModelNode(
                     binding.sceneView.getEngine(),
-                    file,
+                    file.getPath(),
                     true,
-                    1.0f
+                    1.0f,
+                    new Float3(0.0f, 0.0f, 0.0f),
+                    null,
+                    null
             );
             binding.sceneView.addChild(modelNode);
-            modelNode.centerModel(new Position(0, 0, 0));
+            modelNode.centerModel(new Float3(0.0f, 0.0f, 0.0f));
         }
     }
 

@@ -25,7 +25,12 @@ This document tracks the tasks completed and the current status of the project.
 ## 4. Validation & Testing
 - [x] Prototyped and verified `frd2glb` conversion in a Linux environment.
 - [x] Validated conversion logic with a realistic CalculiX-style `.frd` file.
+- [x] Fixed project compilation errors:
+    - Increased `minSdkVersion` to 24 for SceneView compatibility.
+    * Corrected `ModelNode` instantiation and camera clip plane settings for SceneView v0.10.0.
+    * Replaced deprecated `Position` class with `Float3` from `kotlin-math`.
+- [x] Verified full project build (APK generated successfully).
 - [ ] Integration testing on Android device/emulator.
 
 ---
-*Last updated: June 24, 2026*
+*Last updated: June 24, 2026 (Updated after compilation fix)*
