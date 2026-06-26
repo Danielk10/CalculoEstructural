@@ -28,7 +28,9 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         # List C/C++ source files with relative paths to this CMakeLists.txt.
         native-lib.cpp
         AnalysisModel.cpp
-        frd_converter.cpp)
+        frd_converter.cpp
+        CalculixRunner.cpp
+        ProjectStore.cpp)
 
 # Include directories
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE include)

@@ -37,7 +37,25 @@ void testAnalysisModel() {
     assert(inp.find("*NODE") != std::string::npos);
     assert(inp.find("*ELEMENT, TYPE=B31") != std::string::npos);
     assert(inp.find("*CLOAD") != std::string::npos);
-    
+
+    // Test JSON serialization
+    std::string json = model.toJson();
+    std::cout << "--- Generated JSON ---\n" << json << "\n----------------------\n";
+
+    FEA::AnalysisModel model2;
+    model2.fromJson(json);
+
+    assert(model2.nodes.size() == model.nodes.size());
+    assert(model2.elements.size() == model.elements.size());
+    assert(model2.materials.size() == model.materials.size());
+    assert(model2.constraints.size() == model.constraints.size());
+    assert(model2.loads.size() == model.loads.size());
+
+    assert(model2.nodes[1].x == model.nodes[1].x);
+    assert(model2.elements[1].type == model.elements[1].type);
+    assert(model2.materials[0].name == model.materials[0].name);
+
+    std::cout << "AnalysisModel JSON Serialization Test Passed!\n";
     std::cout << "AnalysisModel Test Passed!\n";
 }
 

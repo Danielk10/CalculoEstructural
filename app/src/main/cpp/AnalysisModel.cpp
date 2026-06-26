@@ -62,15 +62,98 @@ std::string AnalysisModel::toInpString() const {
 
 std::string AnalysisModel::toJson() const {
     nlohmann::json j;
-    // Simple implementation for now
-    j["node_count"] = nodes.size();
-    j["element_count"] = elements.size();
+    
+    // Nodes
+    for (const auto& pair : nodes) {
+        const Node& n = pair.second;
+        j["nodes"].push_back({{"id", n.id}, {"x", n.x}, {"y", n.y}, {"z", n.z}});
+    }
+
+    // Elements
+    for (const auto& pair : elements) {
+        const Element& e = pair.second;
+        j["elements"].push_back({{"id", e.id}, {"type", e.type}, {"nodes", e.nodeIds}});
+    }
+
+    // Materials
+    for (const auto& mat : materials) {
+        j["materials"].push_back({
+            {"name", mat.name},
+            {"youngModulus", mat.youngModulus},
+            {"poissonRatio", mat.poissonRatio},
+            {"density", mat.density}
+        });
+    }
+
+    // Constraints
+    for (const auto& bc : constraints) {
+        j["constraints"].push_back({{"nodeId", bc.nodeId}, {"dofs", bc.dofs}, {"value", bc.value}});
+    }
+
+    // Loads
+    for (const auto& load : loads) {
+        j["loads"].push_back({{"nodeId", load.nodeId}, {"fx", load.fx}, {"fy", load.fy}, {"fz", load.fz}});
+    }
+
     return j.dump();
 }
 
 void AnalysisModel::fromJson(const std::string& jsonStr) {
     auto j = nlohmann::json::parse(jsonStr);
-    // Parsing logic would go here
+    clear();
+
+    if (j.contains("nodes")) {
+        for (const auto& item : j["nodes"]) {
+            Node n;
+            n.id = item["id"];
+            n.x = item["x"];
+            n.y = item["y"];
+            n.z = item["z"];
+            nodes[n.id] = n;
+        }
+    }
+
+    if (j.contains("elements")) {
+        for (const auto& item : j["elements"]) {
+            Element e;
+            e.id = item["id"];
+            e.type = item["type"];
+            e.nodeIds = item["nodes"].get<std::vector<int>>();
+            elements[e.id] = e;
+        }
+    }
+
+    if (j.contains("materials")) {
+        for (const auto& item : j["materials"]) {
+            Material m;
+            m.name = item["name"];
+            m.youngModulus = item["youngModulus"];
+            m.poissonRatio = item["poissonRatio"];
+            m.density = item["density"];
+            materials.push_back(m);
+        }
+    }
+
+    if (j.contains("constraints")) {
+        for (const auto& item : j["constraints"]) {
+            BoundaryCondition bc;
+            bc.nodeId = item["nodeId"];
+            bc.dofs = item["dofs"].get<std::vector<int>>();
+            bc.value = item["value"];
+            constraints.push_back(bc);
+        }
+    }
+
+    if (j.contains("loads")) {
+        for (const auto& item : j["loads"]) {
+            Load l;
+            l.nodeId = item["nodeId"];
+            l.fx = item["fx"];
+            l.fy = item["fy"];
+            l.fz = item["fz"];
+            loads.push_back(l);
+        }
+    }
 }
 
 } // namespace FEA
