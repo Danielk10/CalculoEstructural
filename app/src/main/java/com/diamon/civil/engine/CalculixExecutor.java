@@ -31,6 +31,10 @@ public class CalculixExecutor {
         return executeBinary("ccx", jobName);
     }
 
+    public String runGmsh(String inputPath, String outputPath, double meshSize) {
+        return executeBinary("gmsh", inputPath, "-3", "-clmax", String.valueOf(meshSize), "-o", outputPath, "-format", "inp");
+    }
+
     public String executeBinary(String binaryName, String... args) {
         File binary = new File(new File(workDir, "usr/bin"), binaryName);
         if (!binary.exists()) {

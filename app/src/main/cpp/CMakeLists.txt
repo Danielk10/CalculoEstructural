@@ -27,11 +27,13 @@ project("calculoestructural")
 add_library(${CMAKE_PROJECT_NAME} SHARED
         # List C/C++ source files with relative paths to this CMakeLists.txt.
         native-lib.cpp
+        AnalysisModel.cpp
         frd_converter.cpp)
 
-# Specifies libraries CMake should link to your target library. You
-# can link libraries from various origins, such as libraries defined in this
-# build script, prebuilt third-party libraries, or Android system libraries.
+# Include directories
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE include)
+
+# Specifies libraries CMake should link to your target library.
 target_link_libraries(${CMAKE_PROJECT_NAME}
         # List libraries link to the target library
         android
