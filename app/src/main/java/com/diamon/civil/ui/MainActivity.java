@@ -24,6 +24,7 @@ import com.diamon.civil.R;
 import com.diamon.civil.databinding.ActivityMainBinding;
 import com.diamon.civil.engine.CalculixExecutor;
 import com.diamon.civil.engine.InpGenerator;
+import com.diamon.civil.engine.NativeFeaCore;
 import com.diamon.civil.engine.TerminalCommandExecutor;
 import com.diamon.civil.io.FileHelper;
 import com.diamon.civil.util.AssetHelper;
@@ -34,6 +35,8 @@ import io.github.sceneview.node.ModelNode;
 import dev.romainguy.kotlin.math.Float3;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -160,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         binding.btnCopyResult.setOnClickListener(v -> copyToClipboard(binding.tvBasicResult.getText().toString(), "FEA Result"));
         binding.btnClearResult.setOnClickListener(v -> binding.tvBasicResult.setText("Ready for computation."));
         binding.btnRunAnalysis.setOnClickListener(v -> runAnalysis());
-        binding.btnSolveStructural.setOnClickListener(v -> runStructuralPrototype());
+        binding.btnSolveStructural.setOnClickListener(v -> runStructuralAnalysisNative());
         binding.btnSend.setOnClickListener(v -> sendTerminalCommand());
         binding.etCommand.setOnEditorActionListener((v, actionId, event) -> {
             sendTerminalCommand();
@@ -200,25 +203,118 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         binding.layoutModulus.setEnabled(editable);
     }
 
-    private void runStructuralPrototype() {
-        String nodes = binding.etNodes.getText().toString();
-        String elements = binding.etElements.getText().toString();
-        
-        binding.tvStructuralResult.setText("Executing 2D Frame Solver Engine...");
+    private void runStructuralAnalysisNative() {
+        String nodesText = binding.etNodes.getText().toString().trim();
+        String elementsText = binding.etElements.getText().toString().trim();
+
+        if (nodesText.isEmpty() || elementsText.isEmpty()) {
+            binding.tvStructuralResult.setText("Error: Nodes and Elements definitions cannot be empty.");
+            return;
+        }
+
+        binding.tvStructuralResult.setText("Executing Native CalculiX Solver...");
+
         executor.execute(() -> {
+            long modelPtr = 0;
+            NativeFeaCore core = new NativeFeaCore();
             try {
-                Thread.sleep(1500); // Simulate processing
-                String result = "PROTOTYPE 2D RESULTS\n" +
-                               "-------------------\n" +
-                               "Nodes processed: " + nodes.split("\n").length + "\n" +
-                               "Elements detected: " + elements.split("\n").length + "\n" +
-                               "Status: CONVERGED\n" +
-                               "Max Deflection: 4.25 mm\n" +
-                               "Max Moment: 124.5 kN-m\n" +
-                               "Structural integrity verified for prototype.";
-                runOnUiThread(() -> binding.tvStructuralResult.setText(result));
-            } catch (InterruptedException e) {
-                runOnUiThread(() -> binding.tvStructuralResult.setText("Error: " + e.getMessage()));
+                // Parse Nodes
+                StringBuilder jsonBuilder = new StringBuilder();
+                jsonBuilder.append("{\n");
+                jsonBuilder.append("  \"nodes\": [\n");
+                String[] nodeLines = nodesText.split("\n");
+                List<Integer> parsedNodeIds = new ArrayList<>();
+                for (String nodeLine : nodeLines) {
+                    String line = nodeLine.trim();
+                    if (line.isEmpty()) continue;
+                    String[] tokens = line.split(",");
+                    if (tokens.length < 3) continue;
+                    int id = Integer.parseInt(tokens[0].trim());
+                    double x = Double.parseDouble(tokens[1].trim());
+                    double y = Double.parseDouble(tokens[2].trim());
+                    double z = (tokens.length >= 4) ? Double.parseDouble(tokens[3].trim()) : 0.0;
+                    parsedNodeIds.add(id);
+
+                    if (parsedNodeIds.size() > 1) {
+                        jsonBuilder.append(",\n");
+                    }
+                    jsonBuilder.append(String.format("    {\"id\": %d, \"x\": %f, \"y\": %f, \"z\": %f}", id, x, y, z));
+                }
+                jsonBuilder.append("\n  ],\n");
+
+                if (parsedNodeIds.isEmpty()) {
+                    runOnUiThread(() -> binding.tvStructuralResult.setText("Error: No valid nodes parsed. Format: id, x, y"));
+                    return;
+                }
+
+                // Parse Elements
+                jsonBuilder.append("  \"elements\": [\n");
+                String[] elementLines = elementsText.split("\n");
+                int elementCount = 0;
+                for (String line : elementLines) {
+                    line = line.trim();
+                    if (line.isEmpty()) continue;
+                    String[] tokens = line.split(",");
+                    if (tokens.length < 3) continue;
+                    int id = Integer.parseInt(tokens[0].trim());
+                    int n1 = Integer.parseInt(tokens[1].trim());
+                    int n2 = Integer.parseInt(tokens[2].trim());
+
+                    if (elementCount > 0) {
+                        jsonBuilder.append(",\n");
+                    }
+                    jsonBuilder.append(String.format("    {\"id\": %d, \"type\": \"B31\", \"nodes\": [%d, %d]}", id, n1, n2));
+                    elementCount++;
+                }
+                jsonBuilder.append("\n  ],\n");
+
+                if (elementCount == 0) {
+                    runOnUiThread(() -> binding.tvStructuralResult.setText("Error: No valid elements parsed. Format: id, node1, node2"));
+                    return;
+                }
+
+                // Default Material
+                jsonBuilder.append("  \"materials\": [\n");
+                jsonBuilder.append("    {\"name\": \"Steel\", \"youngModulus\": 210000.0, \"poissonRatio\": 0.3, \"density\": 7850.0}\n");
+                jsonBuilder.append("  ],\n");
+
+                // Boundary Conditions - Fix first node
+                int firstNodeId = parsedNodeIds.get(0);
+                jsonBuilder.append("  \"constraints\": [\n");
+                jsonBuilder.append(String.format("    {\"nodeId\": %d, \"dofs\": [1, 2, 3, 4, 5, 6], \"value\": 0.0}\n", firstNodeId));
+                jsonBuilder.append("  ],\n");
+
+                // Loads - Apply load to the last node
+                int lastNodeId = parsedNodeIds.get(parsedNodeIds.size() - 1);
+                jsonBuilder.append("  \"loads\": [\n");
+                jsonBuilder.append(String.format("    {\"nodeId\": %d, \"fx\": 0.0, \"fy\": -100.0, \"fz\": 0.0}\n", lastNodeId));
+                jsonBuilder.append("  ]\n");
+
+                jsonBuilder.append("}");
+
+                String jsonStr = jsonBuilder.toString();
+                
+                modelPtr = core.createModel();
+                core.modelFromJson(modelPtr, jsonStr);
+                
+                String workDirPath = getFilesDir().getAbsolutePath();
+                String libDirPath = getApplicationInfo().nativeLibraryDir;
+                String solverResult = core.runCalculix(workDirPath, libDirPath, "structural_simulation", modelPtr);
+                
+                final String finalResult = solverResult;
+                runOnUiThread(() -> {
+                    binding.tvStructuralResult.setText("STRUCTURAL SIMULATION COMPLETED\n================================\n" + finalResult);
+                });
+
+            } catch (Exception e) {
+                final String errorMsg = e.getMessage();
+                runOnUiThread(() -> {
+                    binding.tvStructuralResult.setText("CRITICAL ERROR: " + errorMsg);
+                });
+            } finally {
+                if (modelPtr != 0) {
+                    core.deleteModel(modelPtr);
+                }
             }
         });
     }

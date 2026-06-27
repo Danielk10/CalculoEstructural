@@ -32,5 +32,12 @@ This document tracks the tasks completed and the current status of the project.
 - [x] Verified full project build (APK generated successfully).
 - [ ] Integration testing on Android device/emulator.
 
+## 5. NDK Core & Native Solver Pipeline
+- [x] Developed JNI wrapper **`NativeFeaCore`** for model lifecycle, serialization, and CalculiX runner.
+- [x] Integrated C++ **`CalculixRunner`** to execute jobs using local native `ccx` binaries.
+- [x] Implemented **`ProjectStore`** for native JSON serialization of the structural analysis state.
+- [x] Integrated JNI native core in **`MainActivity.java`**, replacing the mock structural analysis solver with a live simulation using the actual CalculiX native solver.
+- [x] Developed and verified local unit testing suite for NDK elements (`test_analysis_model`, `test_calculix_runner`, `test_project_store`).
+
 ---
-*Last updated: June 24, 2026 (Updated after compilation fix)*
+*Last updated: June 27, 2026 (Updated after native core integration)*

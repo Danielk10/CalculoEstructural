@@ -29,9 +29,9 @@ The system is built on a shared C++ NDK core that handles heavy computation, par
 ### 1.1 Common Core (JNI/C++)
 - [x] **`AnalysisModel`**: Define unified C++ data structures for nodes, elements, and materials.
 - [x] **`toInpString()`**: Logic to export internal model to CalculiX `.inp` format.
-- [ ] **`CalculixRunner`**: Robust JNI wrapper for `ccx` execution and job management (currently handled in Java via `CalculixExecutor`).
+- [x] **`CalculixRunner`**: Robust JNI wrapper for `ccx` execution and job management (Implemented in C++ and exposed via NativeFeaCore JNI).
 - [x] **`FrdConverter`**: C++ logic using **tinygltf** to convert `.frd` to colored glTF/GLB (Already implemented and tested).
-- [ ] **`ProjectStore`**: JSON/Binary serialization of the project state.
+- [x] **`ProjectStore`**: JSON/Binary serialization of the project state.
 
 ### 1.2 3D Solid Analysis Pipeline
 - [⏱️] **`CAD Pipeline`**: CAD (STEP/IGES/BREP) processing via Gmsh binary execution (Java).
@@ -95,4 +95,4 @@ To ensure the robustness of the FEA core, all new C++ logic (Parsers, Writers, M
 | **Formats** | glTF/GLB, STEP, IGES, BREP, INP, FRD | GLB/INP/FRD Supported |
 
 ---
-*Last Updated: June 26, 2026*
+*Last Updated: June 27, 2026*
