@@ -38,6 +38,8 @@ This document tracks the tasks completed and the current status of the project.
 - [x] Implemented **`ProjectStore`** for native JSON serialization of the structural analysis state.
 - [x] Integrated JNI native core in **`MainActivity.java`**, replacing the mock structural analysis solver with a live simulation using the actual CalculiX native solver.
 - [x] Developed and verified local unit testing suite for NDK elements (`test_analysis_model`, `test_calculix_runner`, `test_project_store`).
+- [x] Implemented JUnit test **`InpEnricherTest`** to verify property injection logic on Gmsh meshes.
+- [x] Fixed NDK compilation error in **`CalculixRunner.cpp`** by adjusting `absCcxPath` buffer size to `PATH_MAX` for the `realpath` function.
 
 ---
-*Last updated: June 27, 2026 (Updated after native core integration)*
+*Last updated: June 27, 2026 (Updated after InpEnricher unit test and NDK compile fix)*

@@ -35,7 +35,7 @@ The system is built on a shared C++ NDK core that handles heavy computation, par
 
 ### 1.2 3D Solid Analysis Pipeline
 - [⏱️] **`CAD Pipeline`**: CAD (STEP/IGES/BREP) processing via Gmsh binary execution (Java).
-- [ ] **`InpEnricher`**: Logic to inject material properties and BCs into Gmsh-generated meshes (Java).
+- [x] **`InpEnricher`**: Logic to inject material properties and BCs into Gmsh-generated meshes (Java) (Implemented and unit tested).
 - [x] **`Visual Conversion`**: C++ logic using **tinygltf** to convert `.frd` to colored glTF/GLB (Already implemented and tested).
 
 ### 1.3 Structural Analysis Pipeline

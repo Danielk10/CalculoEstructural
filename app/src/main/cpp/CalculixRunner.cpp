@@ -36,7 +36,7 @@ JobStatus CalculixRunner::runInp(const std::string& jobName, const std::string& 
     }
 
     // Get absolute path of ccx if it's not already
-    char absCcxPath[1024];
+    char absCcxPath[PATH_MAX];
     if (realpath(ccxPath.c_str(), absCcxPath) == nullptr) {
         // If realpath fails, just use the original
         strncpy(absCcxPath, ccxPath.c_str(), sizeof(absCcxPath));
