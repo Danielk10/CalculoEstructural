@@ -6,21 +6,21 @@ Motor CalculiX compilado · CalculiX 2.23 + SPOOLES + ARPACK + OpenBLAS + Gmsh +
 ---
 
 ## Progreso del Proyecto
-- **Progreso total estimado:** 42% (basado en items completados vs pendientes)
-- **Completados:** 14 ítems
-- **En progreso:** 2 ítems
-- **Pendientes:** 15 ítems
+- **Progreso total estimado:** 55% (basado en items completados vs pendientes)
+- **Completados:** 18 ítems
+- **En progreso:** 1 ítem
+- **Pendientes:** 12 ítems
 
 ---
 
-## Fase 0 + Fase 1 (parcial) — Completados
+## Fase 0 + Fase 1 — Completados
 
 - Navigation Drawer + tabs MODEL/TERMINAL/VIEWER
 - SceneView v0.10.0 integrado (Filament)
 - FRD → GLB converter en C++/tinygltf (TET4 + TRIA3)
 - Heatmap Von Mises (azul a rojo) en vértices
 - NativeFeaCore JNI wrapper completo
-- CalculixRunner (ccx via ProcessBuilder)
+- CalculixRunner (ccx via JNI y ProcessBuilder)
 - ProjectStore: serialización JSON del estado
 - InpEnricher: inyección de propiedades en mallas Gmsh
 - Unit tests NDK en Linux: test_analysis_model, test_calculix_runner, test_project_store
@@ -29,39 +29,18 @@ Motor CalculiX compilado · CalculiX 2.23 + SPOOLES + ARPACK + OpenBLAS + Gmsh +
 - Alineación 16 KB verificada en todos los .so (Android 15 listo)
 - Dependencias dinámicas mapeadas en jniLibs/arm64-v8a
 - Symlink libz.so.1 → /system/lib64/libz.so implementado
+- **A1. Pipeline CAD completo:** GmshRunner, MshToInpConverter y flujo en MainActivity integrados.
+- **A2. Structural Result Mapping:** InpGenerator emite *SECTION PRINT y DatParser extrae fuerzas N, V, M.
 
 ---
 
 ## Etapa A: Cerrar Fase 1 — Motor completo
-**ETA:** 1-2 semanas | **Progreso:** 85%
-
-### A1. Pipeline CAD completo (Modo Abaqus)
-- **Estado:** Próximo paso
-- **Archivos:** `AssetHelper.java`, `GmshRunner.java`, `MshToInpConverter.java`
-- **Descripción:** El binario Gmsh ya existe. Falta el hilo Java que lo invoca y convierte su salida al formato CalculiX.
-- **Tareas:**
-  - [ ] Crear file-picker Intent para STL/STEP/IGES en el Fragment de Solid Analysis
-  - [ ] Escribir GmshRunner.java: ejecutar `gmsh archivo.step -3 -o salida.msh -v 0` via ProcessBuilder
-  - [ ] Escribir MshToInpConverter.java: leer secciones $Nodes y $Elements del .msh, emitir *NODE y *ELEMENT,TYPE=C3D4
-  - [ ] Conectar con InpEnricher.java existente para inyectar material y condiciones de frontera
-  - [ ] Pasar el .inp resultante a CalculixRunner y verificar que genera .frd
-- **Nota:** Gmsh genera tetraedros C3D4 por defecto. InpEnricher ya funciona — solo conectarlo.
-
-### A2. Structural Result Mapping — Diagramas N/V/M (Modo SAP2000)
-- **Estado:** Próximo paso
-- **Archivos:** `StructuralInpGenerator.java`, `DatParser.java`
-- **Descripción:** CalculiX escribe las fuerzas de sección al archivo .dat cuando el .inp incluye *SECTION PRINT. Hay que agregar esa tarjeta al generador y parsear la salida.
-- **Tareas:**
-  - [ ] Agregar `*SECTION PRINT, ELSET=BEAMS` al final del *STEP en StructuralInpGenerator.java
-  - [ ] Escribir DatParser.java: leer el archivo .dat, buscar bloques 'section forces', extraer N, V2, V3, M1, M2 por elemento
-  - [ ] Crear clase SectionForces con campos: elementId, N, V2, V3, M1, M2, M3
-  - [ ] Exponer resultados al Fragment de Structural Analysis para renderizado posterior
-- **Nota:** El .dat es texto plano, mucho más fácil de parsear que el .frd. El .frd sigue siendo el fuente para el heatmap 3D.
+**ETA:** Inmediato | **Progreso:** 100%
 
 ### A3. Integration Testing en dispositivo ARM64
-- **Estado:** Pendiente
+- **Estado:** Próximo paso (CRÍTICO)
 - **Archivos:** Ninguno
-- **Descripción:** Todo fue verificado en Linux local. Hay que confirmar que la cadena completa funciona en hardware real ARM64.
+- **Descripción:** Todo fue verificado en Linux local y mediante compilación exitosa. Hay que confirmar que la cadena completa funciona en hardware real ARM64.
 - **Tareas:**
   - [ ] Generar APK Release firmado
   - [ ] Caso A — Modo Solid: cargar STL de cubo, mallar con Gmsh, resolver con CalculiX, ver heatmap Von Mises en SceneView

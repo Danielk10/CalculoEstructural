@@ -303,7 +303,48 @@
                                 android:text="SOLVE &amp; GENERATE 3D"
                                 android:textStyle="bold"
                                 app:cornerRadius="16dp"
-                                android:layout_marginBottom="16dp" />
+                                android:layout_marginBottom="8dp" />
+
+                            <!-- A1: CAD Pipeline button -->
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnImportCad"
+                                android:layout_width="match_parent"
+                                android:layout_height="56dp"
+                                android:text="⬆ Import CAD (STL/STEP/IGES)"
+                                android:textStyle="bold"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                app:cornerRadius="16dp"
+                                android:layout_marginBottom="8dp" />
+
+                            <!-- Mesh density slider -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginBottom="16dp">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Mesh: Coarse"
+                                    android:textSize="11sp"
+                                    android:textColor="@color/secondaryColor"/>
+                                <SeekBar
+                                    android:id="@+id/seekbarMeshDensity"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="8dp"
+                                    android:layout_marginEnd="8dp"
+                                    android:max="4"
+                                    android:progress="2" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Fine"
+                                    android:textSize="11sp"
+                                    android:textColor="@color/secondaryColor"/>
+                            </LinearLayout>
 
                             <LinearLayout
                                 android:layout_width="match_parent"

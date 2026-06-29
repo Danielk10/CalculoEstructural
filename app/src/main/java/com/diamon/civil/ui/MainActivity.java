@@ -23,7 +23,11 @@ import androidx.core.view.GravityCompat;
 import com.diamon.civil.R;
 import com.diamon.civil.databinding.ActivityMainBinding;
 import com.diamon.civil.engine.CalculixExecutor;
+import com.diamon.civil.engine.DatParser;
+import com.diamon.civil.engine.GmshRunner;
+import com.diamon.civil.engine.InpEnricher;
 import com.diamon.civil.engine.InpGenerator;
+import com.diamon.civil.engine.MshToInpConverter;
 import com.diamon.civil.engine.NativeFeaCore;
 import com.diamon.civil.engine.TerminalCommandExecutor;
 import com.diamon.civil.io.FileHelper;
@@ -49,6 +53,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private AssetHelper assetHelper;
     private FileHelper fileHelper;
     private InpGenerator inpGenerator;
+    private GmshRunner gmshRunner;
+    private MshToInpConverter mshConverter;
+    private DatParser datParser;
     private ActionBarDrawerToggle toggle;
 
     private final ActivityResultLauncher<Intent> importLauncher = registerForActivityResult(
@@ -91,6 +98,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         assetHelper = new AssetHelper(this);
         fileHelper = new FileHelper(getContentResolver());
         inpGenerator = new InpGenerator();
+        gmshRunner = new GmshRunner(getFilesDir(), new File(getApplicationInfo().nativeLibraryDir));
+        mshConverter = new MshToInpConverter();
+        datParser = new DatParser();
 
         setupToolbar();
         setupNavigation();
@@ -113,14 +123,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void setupSceneView() {
-        binding.sceneView.getCameraNode().setNearClipPlane(0.1f);
-        binding.sceneView.getCameraNode().setFarClipPlane(1000.0f);
+        try {
+            // Guard against Filament engine not yet initialized when SceneView is gone
+            if (binding.sceneView.getCameraNode() != null) {
+                binding.sceneView.getCameraNode().setNearClipPlane(0.1f);
+                binding.sceneView.getCameraNode().setFarClipPlane(1000.0f);
+            }
+        } catch (Exception e) {
+            android.util.Log.w("MainActivity", "SceneView camera setup deferred: " + e.getMessage());
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         executor.shutdown();
+        gmshRunner.shutdown();
     }
 
     private void setupUI() {
@@ -165,9 +183,125 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         binding.btnRunAnalysis.setOnClickListener(v -> runAnalysis());
         binding.btnSolveStructural.setOnClickListener(v -> runStructuralAnalysisNative());
         binding.btnSend.setOnClickListener(v -> sendTerminalCommand());
+        binding.btnImportCad.setOnClickListener(v -> openCadFilePicker());
         binding.etCommand.setOnEditorActionListener((v, actionId, event) -> {
             sendTerminalCommand();
             return true;
+        });
+    }
+
+    // ── A1: CAD Pipeline ─────────────────────────────────────────────────────
+
+    private final ActivityResultLauncher<Intent> cadFileLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Uri uri = result.getData().getData();
+                    if (uri != null) handleCadFileSelected(uri);
+                }
+            });
+
+    private void openCadFilePicker() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_MIME_TYPES,
+                new String[]{"model/stl", "application/octet-stream", "*/*"});
+        cadFileLauncher.launch(Intent.createChooser(intent, "Select CAD file (STL/STEP/IGES)"));
+    }
+
+    private void handleCadFileSelected(Uri uri) {
+        String fileName = fileHelper.getFileName(uri);
+        if (fileName == null) fileName = "cad_import_" + System.currentTimeMillis() + ".step";
+
+        File destFile = new File(getFilesDir(), fileName);
+        boolean copied = fileHelper.importFile(uri, destFile);
+        if (!copied) {
+            Toast.makeText(this, "Failed to copy CAD file", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        runCadPipeline(destFile);
+    }
+
+    /**
+     * A1: Full CAD pipeline — Gmsh → MshToInp → InpEnricher → CalculiX → FRD→GLB
+     */
+    private void runCadPipeline(File cadFile) {
+        binding.tvBasicResult.setText("Meshing with Gmsh...");
+        binding.btnImportCad.setEnabled(false);
+
+        int density = binding.seekbarMeshDensity.getProgress() + 1;
+
+        gmshRunner.meshAsync(cadFile, density, new GmshRunner.GmshCallback() {
+            @Override
+            public void onSuccess(File mshFile) {
+                runOnUiThread(() -> binding.tvBasicResult.setText("Mesh OK. Converting to INP..."));
+                executor.execute(() -> {
+                    try {
+                        // Convert .msh → .inp skeleton
+                        File inpSkeleton = new File(getFilesDir(), "cad_mesh.inp");
+                        MshToInpConverter.ConversionResult conv =
+                                mshConverter.convert(mshFile, inpSkeleton);
+
+                        if (!conv.success) {
+                            runOnUiThread(() -> {
+                                binding.tvBasicResult.setText("Conversion Error: " + conv.message);
+                                binding.btnImportCad.setEnabled(true);
+                            });
+                            return;
+                        }
+
+                        // Enrich: inject material + BCs
+                        File enrichedInp = new File(getFilesDir(), "cad_analysis.inp");
+                        String modulus = binding.etModulus.getText().toString();
+                        String density2 = binding.etDensity.getText().toString();
+                        new InpEnricher().enrich(inpSkeleton, enrichedInp,
+                                modulus, "0.3", density2, "-1000.0");
+
+                        // Copy to final job name (CalculiX needs file without .inp)
+                        File finalInp = new File(getFilesDir(), "cad_simulation.inp");
+                        if (enrichedInp.exists()) enrichedInp.renameTo(finalInp);
+
+                        // Run CalculiX
+                        runOnUiThread(() -> binding.tvBasicResult.setText(
+                                conv.message + "\nRunning CalculiX..."));
+                        String ccxResult = calculixExecutor.executeCalculix("cad_simulation");
+
+                        // Convert FRD → GLB
+                        File frdFile = new File(getFilesDir(), "cad_simulation.frd");
+                        File glbFile = new File(getFilesDir(), "cad_simulation.glb");
+                        boolean converted = frdFile.exists() &&
+                                calculixExecutor.convertFrdToGlb(
+                                        frdFile.getAbsolutePath(), glbFile.getAbsolutePath());
+
+                        final boolean finalConverted = converted;
+                        final String finalCcx = ccxResult;
+                        runOnUiThread(() -> {
+                            binding.tvBasicResult.setText(
+                                    "CAD PIPELINE COMPLETE\n" + conv.message + "\n\n" + finalCcx);
+                            binding.btnImportCad.setEnabled(true);
+                            if (finalConverted) {
+                                Toast.makeText(MainActivity.this,
+                                        "3D Model Generated", Toast.LENGTH_SHORT).show();
+                                cargarModeloExterno(glbFile);
+                                binding.tabLayout3D.getTabAt(1).select();
+                            }
+                        });
+                    } catch (Exception e) {
+                        runOnUiThread(() -> {
+                            binding.tvBasicResult.setText("Pipeline Error: " + e.getMessage());
+                            binding.btnImportCad.setEnabled(true);
+                        });
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String message) {
+                runOnUiThread(() -> {
+                    binding.tvBasicResult.setText("Gmsh Error: " + message);
+                    binding.btnImportCad.setEnabled(true);
+                });
+            }
         });
     }
 
@@ -353,6 +487,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         Toast.makeText(this, "3D Model Generated", Toast.LENGTH_SHORT).show();
                         cargarModeloExterno(glbFile);
                         binding.tabLayout3D.getTabAt(1).select();
+                    }
+                    // A2: Parse section forces from .dat
+                    File datFile = new File(getFilesDir(), "structural_simulation.dat");
+                    if (datFile.exists()) {
+                        DatParser.ParseResult forces = datParser.parse(datFile);
+                        String forceSummary = datParser.formatSummary(forces);
+                        binding.tvBasicResult.append("\n\n" + forceSummary);
                     }
                 });
             } catch (Exception e) {

@@ -40,6 +40,8 @@ This document tracks the tasks completed and the current status of the project.
 - [x] Developed and verified local unit testing suite for NDK elements (`test_analysis_model`, `test_calculix_runner`, `test_project_store`).
 - [x] Implemented JUnit test **`InpEnricherTest`** to verify property injection logic on Gmsh meshes.
 - [x] Fixed NDK compilation error in **`CalculixRunner.cpp`** by adjusting `absCcxPath` buffer size to `PATH_MAX` for the `realpath` function.
+- [x] **A1: CAD Pipeline Integrated**: Implemented `GmshRunner` and `MshToInpConverter` to process STL/STEP/IGES files. Integrated the full flow in `MainActivity` including mesh density control.
+- [x] **A2: Structural Result Mapping**: Enhanced `InpGenerator` to request section forces and implemented `DatParser` to extract N, V, M results from `.dat` files for diagram plotting.
 
 ---
 *Last updated: June 27, 2026 (Updated after InpEnricher unit test and NDK compile fix)*

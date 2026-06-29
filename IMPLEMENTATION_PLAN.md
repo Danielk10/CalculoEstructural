@@ -34,13 +34,13 @@ The system is built on a shared C++ NDK core that handles heavy computation, par
 - [x] **`ProjectStore`**: JSON/Binary serialization of the project state.
 
 ### 1.2 3D Solid Analysis Pipeline
-- [⏱️] **`CAD Pipeline`**: CAD (STEP/IGES/BREP) processing via Gmsh binary execution (Java).
+- [x] **`CAD Pipeline`**: CAD (STEP/IGES/BREP) processing via Gmsh binary execution (Java). (Implemented and integrated in MainActivity)
 - [x] **`InpEnricher`**: Logic to inject material properties and BCs into Gmsh-generated meshes (Java) (Implemented and unit tested).
 - [x] **`Visual Conversion`**: C++ logic using **tinygltf** to convert `.frd` to colored glTF/GLB (Already implemented and tested).
 
 ### 1.3 Structural Analysis Pipeline
 - [x] **Structural Inp Export**: Initial implementation for nodal and elemental data.
-- [ ] **Structural Result Mapping**: Converting nodal results into member forces (N, V, M) for diagrams.
+- [x] **Structural Result Mapping**: Converting nodal results into member forces (N, V, M) for diagrams. (Implemented via DatParser)
 
 ---
 

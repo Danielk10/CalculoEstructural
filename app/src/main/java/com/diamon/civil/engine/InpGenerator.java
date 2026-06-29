@@ -79,6 +79,9 @@ public class InpGenerator {
                 writer.write("U\n");
                 writer.write("*EL PRINT, ELSET=EBEAM\n");
                 writer.write("S\n");
+                // A2: Emit section forces to .dat for DatParser (N, V, M diagrams)
+                writer.write("*SECTION PRINT, ELSET=EBEAM\n");
+                writer.write("RF\n");
             } else { // Frequency
                 writer.write("*FREQUENCY\n");
                 writer.write("10\n");

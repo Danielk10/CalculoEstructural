@@ -145,29 +145,26 @@ public class AssetHelper {
 
                 // General Library Linking
                 ok &= linkTool(new File(usrLib, name), libFile);
-// Compatibility mappings
-if (name.equals("libTKBO._so_.so")) {
-    ok &= linkTool(new File(usrLib, "libTKBO.so."), libFile);
-    ok &= linkTool(new File(usrLib, "libTKBO.so"), libFile);
-} else if (name.startsWith("libTK") && name.endsWith(".so")) {
-    // OCCT SONAMEs often have a trailing dot
-    ok &= linkTool(new File(usrLib, name + "."), libFile);
-} else if (name.startsWith("libTK") && name.endsWith("._so_.so")) {
-    // Specific case for libraries like libTKBO._so_.so -> libTKBO.so.
-    String realName = name.replace("._so_.so", ".so.");
-    ok &= linkTool(new File(usrLib, realName), libFile);
-    // Also link without the dot for general access
-    ok &= linkTool(new File(usrLib, realName.substring(0, realName.length() - 1)), libFile);
-} else if (name.equals("libopenblas_so_0.so")) {
 
-
+                // Compatibility mappings: create versioned symlinks for known libraries
+                if (name.equals("libTKBO._so_.so")) {
+                    ok &= linkTool(new File(usrLib, "libTKBO.so."), libFile);
+                    ok &= linkTool(new File(usrLib, "libTKBO.so"), libFile);
+                } else if (name.startsWith("libTK") && name.endsWith("._so_.so")) {
+                    // e.g. libTKXXX._so_.so -> libTKXXX.so.
+                    String realName = name.replace("._so_.so", ".so.");
+                    ok &= linkTool(new File(usrLib, realName), libFile);
+                    ok &= linkTool(new File(usrLib, realName.substring(0, realName.length() - 1)), libFile);
+                } else if (name.startsWith("libTK") && name.endsWith(".so")) {
+                    // OCCT SONAMEs often have a trailing dot
+                    ok &= linkTool(new File(usrLib, name + "."), libFile);
+                } else if (name.equals("libopenblas_so_0.so")) {
                     ok &= linkTool(new File(usrLib, "libopenblas.so.0"), libFile);
                 } else if (name.equals("libopenblasp_r0_3_33_dev.so")) {
                     ok &= linkTool(new File(usrLib, "libopenblasp-r0.3.33.dev.so"), libFile);
                 } else if (name.equals("libgmsh.so")) {
                     ok &= linkTool(new File(usrLib, "libgmsh.so.5.0"), libFile);
                 } else if (name.equals("libgmsh.so.5.0")) {
-                    // Ensure it's linked if NEEDED by other binaries
                     ok &= linkTool(new File(usrLib, "libgmsh.so.5.0"), libFile);
                 } else if (name.equals("libbz2_so_1_0.so")) {
                     ok &= linkTool(new File(usrLib, "libbz2.so.1.0"), libFile);
@@ -190,7 +187,6 @@ if (name.equals("libTKBO._so_.so")) {
                 } else if (name.equals("libDRAWEXE.so")) {
                     ok &= linkTool(new File(usrBin, "DRAWEXE"), libFile);
                 }
-
             }
         }
 
