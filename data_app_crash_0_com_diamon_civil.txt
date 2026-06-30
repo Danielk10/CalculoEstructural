@@ -1,0 +1,33 @@
+2026-06-29 10:51:43 data_app_crash (text, 2313 bytes)
+Process: com.diamon.civil
+PID: 10643
+UID: 10177
+Flags: 0x30e8be46
+Package: com.diamon.civil v1 (1.0)
+Foreground: Yes
+Process-Runtime: 500
+Build: google/sdk_gphone_arm64/emulator_arm64:11/RSR1.240422.006/12134477:userdebug/dev-keys
+
+java.lang.RuntimeException: Unable to start activity ComponentInfo{com.diamon.civil/com.diamon.civil.ui.MainActivity}: java.lang.IllegalStateException: This Activity already has an action bar supplied by the window decor. Do not request Window.FEATURE_SUPPORT_ACTION_BAR and set windowActionBar to false in your theme to use a Toolbar instead.
+	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:3449)
+	at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:3601)
+	at android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:85)
+	at android.app.servertransaction.TransactionExecutor.executeCallbacks(TransactionExecutor.java:135)
+	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:95)
+	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2066)
+	at android.os.Handler.dispatchMessage(Handler.java:106)
+	at android.os.Looper.loop(Looper.java:223)
+	at android.app.ActivityThread.main(ActivityThread.java:7656)
+	at java.lang.reflect.Method.invoke(Native Method)
+	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:592)
+	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:947)
+Caused by: java.lang.IllegalStateException: This Activity already has an action bar supplied by the window decor. Do not request Window.FEATURE_SUPPORT_ACTION_BAR and set windowActionBar to false in your theme to use a Toolbar instead.
+	at androidx.appcompat.app.AppCompatDelegateImpl.setSupportActionBar(AppCompatDelegateImpl.java:606)
+	at androidx.appcompat.app.AppCompatActivity.setSupportActionBar(AppCompatActivity.java:181)
+	at com.diamon.civil.ui.MainActivity.setupToolbar(MainActivity.java:103)
+	at com.diamon.civil.ui.MainActivity.onCreate(MainActivity.java:95)
+	at android.app.Activity.performCreate(Activity.java:7994)
+	at android.app.Activity.performCreate(Activity.java:7978)
+	at android.app.Instrumentation.callActivityOnCreate(Instrumentation.java:1309)
+	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:3422)
+	... 11 more

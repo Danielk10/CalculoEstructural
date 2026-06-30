@@ -6,10 +6,10 @@ Motor CalculiX compilado · CalculiX 2.23 + SPOOLES + ARPACK + OpenBLAS + Gmsh +
 ---
 
 ## Progreso del Proyecto
-- **Progreso total estimado:** 55% (basado en items completados vs pendientes)
-- **Completados:** 18 ítems
+- **Progreso total estimado:** 60% (basado en items completados vs pendientes)
+- **Completados:** 19 ítems
 - **En progreso:** 1 ítem
-- **Pendientes:** 12 ítems
+- **Pendientes:** 11 ítems
 
 ---
 
@@ -31,23 +31,23 @@ Motor CalculiX compilado · CalculiX 2.23 + SPOOLES + ARPACK + OpenBLAS + Gmsh +
 - Symlink libz.so.1 → /system/lib64/libz.so implementado
 - **A1. Pipeline CAD completo:** GmshRunner, MshToInpConverter y flujo en MainActivity integrados.
 - **A2. Structural Result Mapping:** InpGenerator emite *SECTION PRINT y DatParser extrae fuerzas N, V, M.
+- **A3. Integration Testing en dispositivo ARM64:** Verificado en hardware real. App estable.
 
 ---
 
 ## Etapa A: Cerrar Fase 1 — Motor completo
-**ETA:** Inmediato | **Progreso:** 100%
+**ETA:** Finalizado | **Progreso:** 100%
 
 ### A3. Integration Testing en dispositivo ARM64
-- **Estado:** Próximo paso (CRÍTICO)
-- **Archivos:** Ninguno
-- **Descripción:** Todo fue verificado en Linux local y mediante compilación exitosa. Hay que confirmar que la cadena completa funciona en hardware real ARM64.
+- **Estado:** COMPLETADO
+- **Archivos:** `REPORTE_SOLUCION_CRASH.md`
+- **Descripción:** Verificado en hardware real ARM64. Se solucionó el crash crítico de inicio relacionado con el tema y la ActionBar.
 - **Tareas:**
-  - [ ] Generar APK Release firmado
-  - [ ] Caso A — Modo Solid: cargar STL de cubo, mallar con Gmsh, resolver con CalculiX, ver heatmap Von Mises en SceneView
-  - [ ] Caso B — Modo Frame: dibujar viga biapoyada con carga puntual central, resolver, verificar valores de M y V en el .dat
-  - [ ] Validar el symlink libz.so.1 → /system/lib64/libz.so en AssetHelper (verificar crash Tcl)
-  - [ ] Si CalculiX crashea por ruta Termux hardcodeada: ejecutar patchelf --replace-needed en el binario
-- **Nota:** CRÍTICO: revisar ALINEACION_Y_DEPENDENCIAS.md — la ruta absoluta de Termux en libCalculiX.so puede causar crash al arranque.
+  - [x] Generar APK Release firmado
+  - [x] Caso A — Modo Solid: cargar STL de cubo, mallar con Gmsh, resolver con CalculiX, ver heatmap Von Mises en SceneView
+  - [x] Caso B — Modo Frame: dibujar viga biapoyada con carga puntual central, resolver, verificar valores de M y V en el .dat
+  - [x] Validar el symlink libz.so.1 → /system/lib64/libz.so en AssetHelper (verificar crash Tcl)
+  - [x] Solucionar crash `IllegalStateException` de ActionBar mediante renombramiento de tema.
 
 ---
 

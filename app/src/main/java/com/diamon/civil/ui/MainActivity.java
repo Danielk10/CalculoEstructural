@@ -56,7 +56,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private GmshRunner gmshRunner;
     private MshToInpConverter mshConverter;
     private DatParser datParser;
-    private ActionBarDrawerToggle toggle;
 
     private final ActivityResultLauncher<Intent> importLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -102,18 +101,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mshConverter = new MshToInpConverter();
         datParser = new DatParser();
 
-        setupToolbar();
         setupNavigation();
         setupUI();
         setupSceneView();
         checkAndLoadAssets();
-    }
-
-    private void setupToolbar() {
-        setSupportActionBar(binding.toolbar);
-        toggle = new ActionBarDrawerToggle(this, binding.drawerLayout, binding.toolbar, R.string.app_name, R.string.app_name);
-        binding.drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
     }
 
     private void setupNavigation() {
@@ -328,7 +319,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (navId == R.id.nav_structural) title = "Structural Analysis";
         else if (navId == R.id.nav_3d_solid) title = "3D Solid Analysis";
         else if (navId == R.id.nav_terminal) title = "Advanced Terminal";
-        if (getSupportActionBar() != null) getSupportActionBar().setTitle(title);
+        
+        if (binding.toolbar != null) {
+            binding.toolbar.setTitle(title);
+        }
     }
 
     private void setMaterialParams(String modulus, String density, boolean editable) {
@@ -566,7 +560,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (toggle.onOptionsItemSelected(item)) return true;
         
         int id = item.getItemId();
         if (id == R.id.action_import) {
