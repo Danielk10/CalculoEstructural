@@ -1,41 +1,38 @@
-# Informe: Estructura de Componentes Auxiliares del Proyecto
+# Informe Detallado: Estructura de Componentes Auxiliares
 
-Este documento detalla los archivos, scripts y herramientas que no forman parte directa del código fuente de la aplicación (`app/`), pero que son esenciales para las fases de compilación, validación, pruebas y documentación técnica del proyecto.
+Este documento analiza los archivos y scripts auxiliares del repositorio, clasificándolos según los planes de implementación maestros (`IMPLEMENTATION_PLAN.md`, `plan_implementacion_fea.md`).
 
----
+## 1. Fase de Compilación e Infraestructura Nativa (Core NDK)
 
-## 1. Clasificación por Fase de Desarrollo
+Estos componentes son críticos para el **Fase 1: Shared NDK Core** del plan de implementación. Automatizan la construcción de dependencias complejas (C++/CMake/Android NDK).
 
-| Nombre | Tipo | Descripción | Fase |
-| :--- | :--- | :--- | :--- |
-| `build_*.sh` | Script | Scripts de compilación para librerías nativas (CalculiX, Gmsh, OCCT, SPOOLES). | Compilación / Infraestructura |
-| `cbuild_occt_android.sh` | Script | Script especializado de compilación cruzada para OCCT en Android. | Compilación |
-| `setup-sdk.sh` | Script | Script de inicialización y configuración del entorno de desarrollo SDK. | Preparación |
-| `test_*/` | Ejecutable | Binarios/Proyectos de prueba para componentes individuales. | Pruebas |
-| `tests/` | Código fuente | Suite de pruebas unitarias en C++. | Pruebas |
-| `validation/` | Datos | Conjunto de datos de validación (archivos .frd, .inp). | Validación |
-| `converter_prototype/`| Proyecto | Prototipo de convertidor de formatos (FRD a GLB). | Prototipado / R&D |
-| `*.md` | Doc | Informes de auditoría, compilación, planes y guías de desarrollo. | Documentación |
+- **`build_calculix_fixed.sh`**: Script para compilar el solver CalculiX (`ccx`). Crucial para la Fase 1.1 (CalculixRunner).
+- **`build_gmsh.sh`**: Compila Gmsh. Esencial para la Fase 1.2 (Pipeline CAD).
+- **`build_opencascade.sh`**: Compila OpenCASCADE para operaciones geométricas. Requerido para la **Fase 2** (CAD Primitives, Boolean Engine).
+- **`build_spooles_spooles.sh`**: Compila librerías SPOOLES necesarias para el álgebra lineal en CalculiX.
+- **`cbuild_occt_android.sh`**: Script de compilación cruzada especializado para integrar OCCT en Android. Fase 2.
+- **`setup-sdk.sh`**: Configura el entorno necesario para que los scripts anteriores funcionen (Fase de Preparación).
+- **`omp_lib.h`**: Cabecera de OpenMP para paralelización (Fase 4: Performance).
 
----
+## 2. Fase de Pruebas y Validación (QA)
 
-## 2. Detalle de Scripts de Compilación (Fase: Compilación)
-Estos scripts automatizan la compilación de dependencias nativas complejas:
-- **`build_calculix_fixed.sh`**: Compila el motor de elementos finitos CalculiX con parches aplicados.
-- **`build_gmsh.sh`**: Compila la herramienta de mallado Gmsh.
-- **`build_opencascade.sh`**: Compila OpenCASCADE para modelado geométrico.
-- **`build_spooles_spooles.sh`**: Compila la librería SPOOLES para álgebra lineal.
-- **`cbuild_occt_android.sh`**: Script crítico para la integración de OCCT en Android mediante compilación cruzada.
+Estos archivos soportan la **Estrategia de Testing & Validación** descrita en el plan maestro.
 
-## 3. Detalle de Pruebas y Validación (Fase: Pruebas/Validación)
-Herramientas utilizadas para verificar la integridad del motor de cálculo:
-- **`tests/`**: Contiene implementaciones de pruebas (`test_analysis_model.cpp`, etc.) para verificar la lógica nativa.
-- **`validation/`**: Contiene archivos de ejemplo (`beam.frd`, `beam.inp`) utilizados para ejecutar simulaciones de validación rápida.
+- **`tests/`**: Código fuente C++ para testing unitario.
+  - `test_analysis_model.cpp`: Verifica la integridad de la estructura de datos `AnalysisModel` (Fase 1.1).
+  - `test_calculix_runner.cpp`: Verifica la ejecución del solver nativo.
+  - `test_project_store.cpp`: Verifica la persistencia de datos del modelo.
+- **`validation/`**: Contiene escenarios de prueba pre-construidos (.frd, .inp) para validación rápida en dispositivo o emulador.
+- **`test_*` (binarios en raíz)**: Binarios ejecutables de las pruebas de `tests/` para verificar la lógica nativa localmente en Linux.
 
-## 4. Documentación Técnica (Fase: Documentación)
-- **Informes de compilación y auditoría**: `INFORME_COMPILACION_CALCULIX.md`, `REPORTE_AUDITORIA.md`, etc.
-- **Planes de implementación**: `IMPLEMENTATION_PLAN.md`, `plan_implementacion_fea.md`.
-- **Guías**: `DEVELOPER_GUIDE.md`, `guia_desarrollo_calculoestructural.md`, `guia_uso_sdk.md`.
+## 3. Fase de Prototipado (I+D)
 
----
-*Nota: Este informe es informativo para el mantenimiento y escalabilidad del proyecto.*
+- **`converter_prototype/`**: Contiene la implementación original en C++ del convertidor FRD a GLB (Fase 1.1). Es la base del código que actualmente corre dentro de la aplicación vía JNI.
+
+## 4. Documentación y Gestión de Proyecto
+
+Estos archivos mantienen el control sobre las fases descritas en `IMPLEMENTATION_PLAN.md` y `plan_implementacion_fea.md`.
+
+- **Planes**: `IMPLEMENTATION_PLAN.md` (Visión global), `plan_implementacion_fea.md` (Estado detallado).
+- **Auditoría**: `REPORTE_AUDITORIA.md`, `CALCULIX_BUILD_REPORT.md`, `INFORME_COMPILACION_CALCULIX.md` (Seguimiento de Fase 1).
+- **Guías**: `FIREBASE_TESTING_PROCEDURE.md`, `DEVELOPER_GUIDE.md`, `guia_uso_sdk.md`.
