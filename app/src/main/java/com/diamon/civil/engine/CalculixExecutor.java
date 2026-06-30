@@ -16,16 +16,21 @@ public class CalculixExecutor {
     private final File workDir;
     private final File nativeLibDir;
 
-    static {
-        System.loadLibrary("calculoestructural");
-    }
-
-    public native boolean convertFrdToGlb(String inputPath, String outputPath);
-
     public CalculixExecutor(Context context) {
         this.workDir = context.getFilesDir();
         this.nativeLibDir = new File(context.getApplicationInfo().nativeLibraryDir);
+        
+        // Load libraries with absolute paths to fix dependency resolution
+        try {
+            String libPath = nativeLibDir.getAbsolutePath() + "/";
+            System.load(libPath + "libTKPrim.so"); // Load first as dependency
+            System.load(libPath + "libcalculoestructural.so");
+        } catch (UnsatisfiedLinkError e) {
+            android.util.Log.e(TAG, "Failed to load libraries", e);
+        }
     }
+
+    public native boolean convertFrdToGlb(String inputPath, String outputPath);
 
     public String executeCalculix(String jobName) {
         return executeBinary("ccx", jobName);
