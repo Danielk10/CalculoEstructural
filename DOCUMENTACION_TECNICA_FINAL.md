@@ -18,6 +18,8 @@ Este documento unifica toda la auditoría técnica del proyecto Android principa
 *   **`DatParser.java`**: Analiza el archivo `.dat` resultante de la simulación para extraer diagramas de esfuerzos.
 *   **`InpGenerator.java`**: Generador genérico de archivos input, incluyendo directivas `*SECTION PRINT`.
 *   **`InpEnricher.java`**: Modifica archivos `.inp` para inyectar propiedades de material y sección después del mallado.
+*   **`OcctBooleanJNI.java`**: Bridge Java para operaciones booleanas geométricas (OCCT).
+*   **`OcctPrimitivesJNI.java`**: Bridge Java para creación de primitivas geométricas (OCCT).
 *   **`TerminalCommandExecutor.java`**: Ejecutor genérico de comandos del sistema operativo (usado para tareas auxiliares).
 
 ### 1.2. Gestión de Archivos (`.../io`)
