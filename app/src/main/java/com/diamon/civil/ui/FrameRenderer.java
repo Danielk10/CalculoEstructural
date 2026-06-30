@@ -4,9 +4,15 @@ import android.content.Context;
 import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+
+import com.diamon.civil.engine.StructuralModel;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -24,13 +30,79 @@ public class FrameRenderer implements GLSurfaceView.Renderer {
     private FloatBuffer gridBuffer;
     private int gridVertexCount;
 
+    private final List<StructuralModel.Node> nodes = new ArrayList<>();
+    private final List<StructuralModel.Element> elements = new ArrayList<>();
+    private FloatBuffer nodeBuffer;
+    private int nodeVertexCount = 0;
+    private FloatBuffer beamBuffer;
+    private int beamVertexCount = 0;
+
     public FrameRenderer(Context context) {
         this.context = context;
     }
 
+    public void addNode(StructuralModel.Node node) {
+        nodes.add(node);
+        updateBuffers();
+    }
+
+    public void addElement(StructuralModel.Element element) {
+        elements.add(element);
+        updateBuffers();
+    }
+
+    public void clear() {
+        nodes.clear();
+        elements.clear();
+        updateBuffers();
+    }
+
+    private void updateBuffers() {
+        // Nodes
+        float[] nodeVertices = new float[nodes.size() * 3];
+        for (int i = 0; i < nodes.size(); i++) {
+            nodeVertices[i * 3] = (float) nodes.get(i).x;
+            nodeVertices[i * 3 + 1] = (float) nodes.get(i).y;
+            nodeVertices[i * 3 + 2] = (float) nodes.get(i).z;
+        }
+        nodeVertexCount = nodes.size();
+        if (nodeVertexCount > 0) {
+            nodeBuffer = ByteBuffer.allocateDirect(nodeVertices.length * 4)
+                    .order(ByteOrder.nativeOrder())
+                    .asFloatBuffer();
+            nodeBuffer.put(nodeVertices).position(0);
+        }
+
+        // Beams
+        float[] beamVertices = new float[elements.size() * 6];
+        int idx = 0;
+        for (StructuralModel.Element e : elements) {
+            StructuralModel.Node n1 = findNode(e.node1Id);
+            StructuralModel.Node n2 = findNode(e.node2Id);
+            if (n1 != null && n2 != null) {
+                beamVertices[idx++] = (float) n1.x; beamVertices[idx++] = (float) n1.y; beamVertices[idx++] = (float) n1.z;
+                beamVertices[idx++] = (float) n2.x; beamVertices[idx++] = (float) n2.y; beamVertices[idx++] = (float) n2.z;
+            }
+        }
+        beamVertexCount = idx / 3;
+        if (beamVertexCount > 0) {
+            beamBuffer = ByteBuffer.allocateDirect(beamVertices.length * 4)
+                    .order(ByteOrder.nativeOrder())
+                    .asFloatBuffer();
+            beamBuffer.put(beamVertices).position(0);
+        }
+    }
+
+    private StructuralModel.Node findNode(int id) {
+        for (StructuralModel.Node n : nodes) if (n.id == id) return n;
+        return null;
+    }
+
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        GLES30.glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        GLES30.glClearColor(0.95f, 0.95f, 0.95f, 1.0f);
+        GLES30.glEnable(GLES30.GL_DEPTH_TEST);
+        GLES30.glLineWidth(5.0f);
         
         // Simple program
         String vertexShaderCode = 
@@ -40,6 +112,7 @@ public class FrameRenderer implements GLSurfaceView.Renderer {
             "uniform mat4 uView;\n" +
             "void main() {\n" +
             "    gl_Position = uProjection * uView * vec4(aPosition, 1.0);\n" +
+            "    gl_PointSize = 20.0;\n" + // Set point size here
             "}";
             
         String fragmentShaderCode = 
@@ -98,11 +171,27 @@ public class FrameRenderer implements GLSurfaceView.Renderer {
         GLES30.glUniformMatrix4fv(uProjectionLocation, 1, false, projectionMatrix, 0);
         GLES30.glUniformMatrix4fv(uViewLocation, 1, false, viewMatrix, 0);
 
-        // Draw Grid
-        GLES30.glUniform4f(uColorLocation, 0.3f, 0.3f, 0.3f, 1.0f);
         GLES30.glEnableVertexAttribArray(0);
+
+        // 1. Draw Grid
+        GLES30.glUniform4f(uColorLocation, 0.7f, 0.7f, 0.7f, 1.0f);
         GLES30.glVertexAttribPointer(0, 3, GLES30.GL_FLOAT, false, 0, gridBuffer);
         GLES30.glDrawArrays(GLES30.GL_LINES, 0, gridVertexCount);
+
+        // 2. Draw Beams
+        if (beamVertexCount > 0) {
+            GLES30.glUniform4f(uColorLocation, 0.2f, 0.4f, 0.8f, 1.0f); // Blue
+            GLES30.glVertexAttribPointer(0, 3, GLES30.GL_FLOAT, false, 0, beamBuffer);
+            GLES30.glDrawArrays(GLES30.GL_LINES, 0, beamVertexCount);
+        }
+
+        // 3. Draw Nodes
+        if (nodeVertexCount > 0) {
+            GLES30.glUniform4f(uColorLocation, 1.0f, 0.3f, 0.3f, 1.0f); // Red
+            GLES30.glVertexAttribPointer(0, 3, GLES30.GL_FLOAT, false, 0, nodeBuffer);
+            GLES30.glDrawArrays(GLES30.GL_POINTS, 0, nodeVertexCount);
+        }
+
         GLES30.glDisableVertexAttribArray(0);
     }
 

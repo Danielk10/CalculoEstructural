@@ -8,11 +8,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.text.InputType;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -36,6 +38,7 @@ import com.diamon.civil.engine.OcctBooleanJNI;
 import com.diamon.civil.engine.OcctPrimitivesJNI;
 import com.diamon.civil.engine.StructuralModel;
 import com.diamon.civil.engine.TerminalCommandExecutor;
+import com.diamon.civil.io.AbaqusInpImporter;
 import com.diamon.civil.io.FileHelper;
 import com.diamon.civil.util.AssetHelper;
 import com.google.android.material.navigation.NavigationView;
@@ -113,6 +116,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         binding.btnFuse.setOnClickListener(v -> runBooleanOperation(0));
         binding.btnCut.setOnClickListener(v -> runBooleanOperation(1));
         
+        binding.seekbarMeshDensity.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                binding.tvBasicResult.setText("Mesh Density: " + (progress + 1));
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+
+        binding.sceneView.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                handleSceneTouch(event.getX(), event.getY());
+            }
+            return false; // Let SceneView handle camera rotation
+        });
+
         setupNavigation();
         setupUI();
         setupSceneView();
@@ -132,9 +153,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 binding.sceneView.getCameraNode().setNearClipPlane(0.1f);
                 binding.sceneView.getCameraNode().setFarClipPlane(1000.0f);
             }
+            loadHelloWorldModel();
         } catch (Exception e) {
-            android.util.Log.w("MainActivity", "SceneView camera setup deferred: " + e.getMessage());
+            android.util.Log.w("MainActivity", "SceneView setup deferred: " + e.getMessage());
         }
+    }
+
+    private void loadHelloWorldModel() {
+        ModelNode modelNode = new ModelNode(
+                binding.sceneView.getEngine(),
+                "models/test_beam.glb",
+                true,
+                1.0f,
+                new Float3(0.0f, 0.0f, 0.0f),
+                null,
+                null
+        );
+        binding.sceneView.addChild(modelNode);
+        modelNode.centerModel(new Float3(0.0f, 0.0f, 0.0f));
     }
 
     @Override
@@ -189,12 +225,59 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         binding.btnShowSFD.setOnClickListener(v -> binding.diagramView.setDiagramType(2));
         binding.btnShowAFD.setOnClickListener(v -> binding.diagramView.setDiagramType(3));
         binding.btnHideDiagram.setOnClickListener(v -> binding.diagramView.setDiagramType(0));
+        binding.btnImportInp.setOnClickListener(v -> openInpFilePicker());
         
         binding.btnSend.setOnClickListener(v -> sendTerminalCommand());
         binding.btnImportCad.setOnClickListener(v -> openCadFilePicker());
         binding.etCommand.setOnEditorActionListener((v, actionId, event) -> {
             sendTerminalCommand();
             return true;
+        });
+    }
+
+    private void handleSceneTouch(float x, float y) {
+        // Simplified: Highlight the model if touched
+        Toast.makeText(this, "Face selected at: " + x + ", " + y, Toast.LENGTH_SHORT).show();
+        // In a real flow, we would use Ray-Casting to find the exact face
+    }
+
+    private final ActivityResultLauncher<Intent> inpFileLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Uri uri = result.getData().getData();
+                    if (uri != null) handleInpFileSelected(uri);
+                }
+            });
+
+    private void openInpFilePicker() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        inpFileLauncher.launch(Intent.createChooser(intent, "Select CalculiX/Abaqus .inp file"));
+    }
+
+    private void handleInpFileSelected(Uri uri) {
+        File destFile = new File(getFilesDir(), "imported_model.inp");
+        if (fileHelper.importFile(uri, destFile)) {
+            runInpImport(destFile);
+        }
+    }
+
+    private void runInpImport(File inpFile) {
+        executor.execute(() -> {
+            try {
+                StructuralModel model = new AbaqusInpImporter().importInp(inpFile);
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Imported " + model.nodes.size() + " nodes", Toast.LENGTH_SHORT).show();
+                    // Load into Structural Editor
+                    binding.frameGLView.getRenderer().clear();
+                    for (StructuralModel.Node n : model.nodes) binding.frameGLView.getRenderer().addNode(n);
+                    for (StructuralModel.Element e : model.elements) binding.frameGLView.getRenderer().addElement(e);
+                    binding.frameGLView.requestRender();
+                });
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(this, "Import Failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
+            }
         });
     }
 

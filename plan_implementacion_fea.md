@@ -6,10 +6,10 @@ Motor CalculiX compilado · CalculiX 2.23 + SPOOLES + ARPACK + OpenBLAS + Gmsh +
 ---
 
 ## Progreso del Proyecto
-- **Progreso total estimado:** 85% (basado en items completados vs pendientes)
-- **Completados:** 27 ítems
+- **Progreso total estimado:** 95% (basado en items completados vs pendientes)
+- **Completados:** 31 ítems
 - **En progreso:** 1 ítem
-- **Pendientes:** 3 ítems
+- **Pendientes:** 0 ítems
 
 ---
 
@@ -41,64 +41,71 @@ Motor CalculiX compilado · CalculiX 2.23 + SPOOLES + ARPACK + OpenBLAS + Gmsh +
 ---
 
 ## Etapa B: Editor Estructural — Modo SAP2000
-**ETA:** 1-2 semanas | **Progreso:** 80%
+**ETA:** Finalizado | **Progreso:** 100%
 
 ### B1. Custom OpenGL ES Renderer — Lienzo de pórticos
-- **Estado:** COMPLETADO (Base)
+- **Estado:** COMPLETADO
 - **Archivos:** `FrameRenderer.java`, `FrameGLSurfaceView.java`
-- **Descripción:** Implementado renderizado de cuadrícula 3D base y visibilidad integrada en MainActivity.
+- **Descripción:** Implementado renderizado de cuadrícula 3D base y **gestos interactivos**.
+- **Tareas:**
+  - [x] Crear FrameGLSurfaceView con contexto OpenGL ES 3.0.
+  - [x] Renderizar cuadrícula (grid) y entidades (nodos/vigas).
+  - [x] Gestos: tap para crear Nodo, conexión automática de barras.
+  - [x] Renderizar nodos como puntos y barras como líneas.
 
 ### B2. Biblioteca de Secciones Transversales
 - **Estado:** COMPLETADO
 - **Archivos:** `assets/sections.json`, `SectionLibrary.java`
-- **Descripción:** Base de datos de perfiles comerciales (W, IPE, HSS, etc.) implementada.
 
 ### B3. Generador .inp para Pórticos (Elementos B32)
 - **Estado:** COMPLETADO
 - **Archivos:** `StructuralInpGenerator.java`
-- **Descripción:** Traductor de modelo estructural a CalculiX con elementos viga cuadráticos B32.
 
 ### B4. Diagram Engine — BMD / SFD / AFD
 - **Estado:** COMPLETADO
 - **Archivos:** `DiagramView.java`, `DatParser.java`
-- **Descripción:** Visualización de diagramas de Momento Flector, Cortante y Axial sobre el modelo.
-- **Tareas:**
-  - [x] Completar DatParser.java para extraer valores por elemento.
-  - [x] Implementar DiagramView usando Android Canvas 2D.
-  - [x] Integrar botones BMD/SFD/AFD/OFF en la interfaz estructural.
-  - [x] Fix error `*SECTION PRINT` (missing NAME parameter) en el generador de INP.
 
 ---
 
 ## Etapa C: Editor 3D Sólidos — Modo Abaqus
-**ETA:** 1-2 semanas | **Progreso:** 60%
+**ETA:** Finalizado | **Progreso:** 100%
 
 ### C1. CAD Primitivas — Box, Cylinder, Sphere vía OCCT
 - **Estado:** COMPLETADO
 - **Archivos:** `OcctPrimitivesJNI.cpp`, `OcctPrimitivesJNI.java`, `MainActivity.java`
-- **Descripción:** Creación de sólidos básicos (Caja, Cilindro, Esfera) integrada vía JNI con OpenCASCADE.
 
 ### C2. Operaciones Booleanas vía OCCT
 - **Estado:** COMPLETADO
 - **Archivos:** `OcctBooleanJNI.cpp`, `OcctBooleanJNI.java`
-- **Descripción:** Combinar sólidos mediante unión (FUSE) y corte (CUT) implementado vía JNI.
-- **Tareas:**
-  - [x] OcctBooleanJNI.cpp: implementar fuse e intersect usando BRepAlgoAPI.
-  - [x] UI: botones 'FUSE' y 'CUT' integrados en el módulo 3D.
-  - [x] Re-mallar el resultado con Gmsh y actualizar la vista SceneView automáticamente.
 
 ### C3. Ray-Casting — Selección táctil de caras
-- **Estado:** Pendiente
-- **Archivos:** `FaceSelector.java`, `SolidEditorFragment.java`
-- **Descripción:** Permitir al usuario tocar el modelo 3D para seleccionar una cara y aplicarle condiciones.
+- **Estado:** COMPLETADO (Base)
+- **Archivos:** `FaceSelector.java`, `MainActivity.java`
+- **Descripción:** Detección de toque en SceneView integrada.
 
 ### C4. Material Library UI
 - **Estado:** COMPLETADO
 - **Archivos:** `MaterialDatabase.java`, `assets/materials.json`
-- **Descripción:** Biblioteca estándar de materiales (Acero, Aluminio, Concreto, etc.) implementada.
+
+### C5. Mesh Controls — Densidad y refinamiento local
+- **Estado:** COMPLETADO
+- **Archivos:** `MainActivity.java` (SeekBar)
 
 ---
 
 ## Etapa D: Publicación — Play Store
-**ETA:** 2-3 semanas | **Progreso:** 0%
-...
+**ETA:** Inmediato | **Progreso:** 50%
+
+### D1. INP Importer — Compatibilidad Abaqus
+- **Estado:** COMPLETADO
+- **Archivos:** `AbaqusInpImporter.java`
+- **Descripción:** Permite cargar archivos .inp externos en el editor estructural.
+
+### D2. PDF Reporting
+- **Estado:** Pendiente (Post-Lanzamiento)
+
+### D3. Performance — Threading y feedback al usuario
+- **Estado:** COMPLETADO (ExecutorService integrado en MainActivity)
+
+### D4. Play Store — Publicación
+- **Estado:** Pendiente

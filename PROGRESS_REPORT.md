@@ -8,6 +8,7 @@ This document tracks the tasks completed and the current status of the project.
 - [x] Updated `activity_main.xml` to include a 3-tab navigation (MODEL, TERMINAL, VIEWER).
 - [x] Integrated `SceneView` component for 3D visualization.
 - [x] Implemented tab-switching logic in `MainActivity.java`.
+- [x] Added "Hello World" 3D model loading on startup to verify SceneView integration.
 
 ## 2. 3D Engine & Converter (C++/NDK)
 - [x] Integrated **tinygltf** library (headers only) for GLB generation.
@@ -25,10 +26,7 @@ This document tracks the tasks completed and the current status of the project.
 ## 4. Validation & Testing
 - [x] Prototyped and verified `frd2glb` conversion in a Linux environment.
 - [x] Validated conversion logic with a realistic CalculiX-style `.frd` file.
-- [x] Fixed project compilation errors:
-    - Increased `minSdkVersion` to 24 for SceneView compatibility.
-    * Corrected `ModelNode` instantiation and camera clip plane settings for SceneView v0.10.0.
-    * Replaced deprecated `Position` class with `Float3` from `kotlin-math`.
+- [x] Fixed project compilation errors (minSdkVersion 24, ModelNode instantiation, Float3 replacement).
 - [x] Verified full project build (APK generated successfully).
 - [x] Integration testing on Android device/emulator (Successful startup and basic flow).
 - [x] Fixed startup crash related to `ActionBar` and theme conflicts.
@@ -37,21 +35,21 @@ This document tracks the tasks completed and the current status of the project.
 - [x] Developed JNI wrapper **`NativeFeaCore`** for model lifecycle, serialization, and CalculiX runner.
 - [x] Integrated C++ **`CalculixRunner`** to execute jobs using local native `ccx` binaries.
 - [x] Implemented **`ProjectStore`** for native JSON serialization of the structural analysis state.
-- [x] Integrated JNI native core in **`MainActivity.java`**, replacing the mock structural analysis solver with a live simulation using the actual CalculiX native solver.
-- [x] Developed and verified local unit testing suite for NDK elements (`test_analysis_model`, `test_calculix_runner`, `test_project_store`).
-- [x] Implemented JUnit test **`InpEnricherTest`** to verify property injection logic on Gmsh meshes.
-- [x] Fixed NDK compilation error in **`CalculixRunner.cpp`** by adjusting `absCcxPath` buffer size to `PATH_MAX` for the `realpath` function.
-- [x] **A1: CAD Pipeline Integrated**: Implemented `GmshRunner` and `MshToInpConverter` to process STL/STEP/IGES files. Integrated the full flow in `MainActivity` including mesh density control.
-- [x] **A2: Structural Result Mapping**: Enhanced `InpGenerator` to request section forces and implemented `DatParser` to extract N, V, M results from `.dat` files for diagram plotting.
+- [x] Integrated JNI native core in **`MainActivity.java`**.
+- [x] **A1: CAD Pipeline Integrated**: GmshRunner, MshToInpConverter, and MainActivity flow.
+- [x] **A2: Structural Result Mapping**: Section forces extraction from `.dat` files.
 
 ## 6. Structural & Solid Editors (Phase 2 & 3)
-- [x] **B1: Custom OpenGL ES Renderer Foundation**: Implemented `FrameRenderer` and `FrameGLSurfaceView` with a basic 3D grid. Integrated into `MainActivity`.
-- [x] **B2: Section Library**: Implemented `sections.json` and `SectionLibrary.java` for structural profile management.
-- [x] **B3: Structural Inp Generator**: Implemented `StructuralInpGenerator` with support for B32 elements and mid-node generation.
+- [x] **B1: Interactive OpenGL ES Renderer**: Implemented `FrameRenderer` and `FrameGLSurfaceView` with a 3D grid and **gesture support** (tap to create node, auto-beam creation).
+- [x] **B2: Section Library**: Implemented `sections.json` and `SectionLibrary.java`.
+- [x] **B3: Structural Inp Generator**: Implemented `StructuralInpGenerator` with support for B32 elements.
 - [x] **B4: Diagram Engine**: Implemented `DiagramView` to render BMD, SFD, and AFD diagrams using Android Canvas. Fixed `*SECTION PRINT` error in INP generation.
-- [x] **C1: CAD Primitives**: Implemented `OcctPrimitivesJNI` (Java/C++) to create Box, Cylinder, and Sphere solids using OpenCASCADE. Integrated UI buttons in the 3D Solid module.
+- [x] **C1: CAD Primitives**: Implemented `OcctPrimitivesJNI` (Java/C++) to create Box, Cylinder, and Sphere solids using OpenCASCADE.
 - [x] **C2: Boolean Operations**: Implemented `OcctBooleanJNI` (Java/C++) for FUSE and CUT operations using OpenCASCADE.
-- [x] **C4: Material Library**: Implemented `materials.json` and `MaterialDatabase.java` for standardized material property management.
+- [x] **C3: Ray-Casting & Face Selection**: Implemented basic touch selection on 3D models in `SceneView`.
+- [x] **C4: Material Library**: Implemented `materials.json` and `MaterialDatabase.java`.
+- [x] **C5: Mesh Controls**: Integrated mesh density slider to control Gmsh discretization quality.
+- [x] **D1: INP Importer**: Implemented `AbaqusInpImporter` to allow importing external .inp files into the Structural Editor.
 
 ---
-*Last updated: June 30, 2026 (Updated after Phase 2 & 3 completion of B4 and C2)*
+*Last updated: June 30, 2026 (Updated after Phase 2 & 3 advanced feature implementation)*

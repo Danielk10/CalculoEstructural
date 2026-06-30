@@ -195,6 +195,14 @@
                         <Button android:id="@+id/btnShowAFD" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="AFD" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:textSize="10sp"/>
                         <Button android:id="@+id/btnHideDiagram" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="OFF" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:textSize="10sp"/>
                     </LinearLayout>
+
+                    <Button
+                        android:id="@+id/btnImportInp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="IMPORT .INP"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_marginTop="8dp"/>
                 </LinearLayout>
             </androidx.core.widget.NestedScrollView>
 
