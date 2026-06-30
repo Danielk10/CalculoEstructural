@@ -30,13 +30,48 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         AnalysisModel.cpp
         frd_converter.cpp
         CalculixRunner.cpp
-        ProjectStore.cpp)
+        ProjectStore.cpp
+        OcctPrimitivesJNI.cpp
+        OcctBooleanJNI.cpp)
 
 # Include directories
-target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE include)
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE 
+        include
+        ${CMAKE_SOURCE_DIR}/../assets/data/data/com.diamon.civil/files/usr/include/opencascade)
+
+# Define location of prebuilt OCCT libraries
+set(OCCT_LIBS_DIR ${CMAKE_SOURCE_DIR}/../jniLibs/${ANDROID_ABI})
+
+# Helper function to import OCCT libraries
+function(import_occt_lib LIB_NAME)
+    add_library(${LIB_NAME} SHARED IMPORTED)
+    set_target_properties(${LIB_NAME} PROPERTIES IMPORTED_LOCATION ${OCCT_LIBS_DIR}/lib${LIB_NAME}.so)
+endfunction()
+
+# Import required OCCT modules
+import_occt_lib(TKPrim)
+import_occt_lib(TKTopAlgo)
+import_occt_lib(TKBO)
+import_occt_lib(TKBool)
+import_occt_lib(TKBRep)
+import_occt_lib(TKMath)
+import_occt_lib(TKernel)
+import_occt_lib(TKGeomBase)
+import_occt_lib(TKG3d)
+import_occt_lib(TKG2d)
 
 # Specifies libraries CMake should link to your target library.
 target_link_libraries(${CMAKE_PROJECT_NAME}
         # List libraries link to the target library
         android
-        log)
+        log
+        TKPrim
+        TKTopAlgo
+        TKBO
+        TKBool
+        TKBRep
+        TKMath
+        TKernel
+        TKGeomBase
+        TKG3d
+        TKG2d)

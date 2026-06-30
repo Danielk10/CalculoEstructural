@@ -30,7 +30,8 @@ This document tracks the tasks completed and the current status of the project.
     * Corrected `ModelNode` instantiation and camera clip plane settings for SceneView v0.10.0.
     * Replaced deprecated `Position` class with `Float3` from `kotlin-math`.
 - [x] Verified full project build (APK generated successfully).
-- [ ] Integration testing on Android device/emulator.
+- [x] Integration testing on Android device/emulator (Successful startup and basic flow).
+- [x] Fixed startup crash related to `ActionBar` and theme conflicts.
 
 ## 5. NDK Core & Native Solver Pipeline
 - [x] Developed JNI wrapper **`NativeFeaCore`** for model lifecycle, serialization, and CalculiX runner.
@@ -43,9 +44,14 @@ This document tracks the tasks completed and the current status of the project.
 - [x] **A1: CAD Pipeline Integrated**: Implemented `GmshRunner` and `MshToInpConverter` to process STL/STEP/IGES files. Integrated the full flow in `MainActivity` including mesh density control.
 - [x] **A2: Structural Result Mapping**: Enhanced `InpGenerator` to request section forces and implemented `DatParser` to extract N, V, M results from `.dat` files for diagram plotting.
 
----
-*Last updated: June 30, 2026 (Updated after integration testing and crash resolution)*
-ram plotting.
+## 6. Structural & Solid Editors (Phase 2 & 3)
+- [x] **B1: Custom OpenGL ES Renderer Foundation**: Implemented `FrameRenderer` and `FrameGLSurfaceView` with a basic 3D grid. Integrated into `MainActivity`.
+- [x] **B2: Section Library**: Implemented `sections.json` and `SectionLibrary.java` for structural profile management.
+- [x] **B3: Structural Inp Generator**: Implemented `StructuralInpGenerator` with support for B32 elements and mid-node generation.
+- [x] **B4: Diagram Engine**: Implemented `DiagramView` to render BMD, SFD, and AFD diagrams using Android Canvas. Fixed `*SECTION PRINT` error in INP generation.
+- [x] **C1: CAD Primitives**: Implemented `OcctPrimitivesJNI` (Java/C++) to create Box, Cylinder, and Sphere solids using OpenCASCADE. Integrated UI buttons in the 3D Solid module.
+- [x] **C2: Boolean Operations**: Implemented `OcctBooleanJNI` (Java/C++) for FUSE and CUT operations using OpenCASCADE.
+- [x] **C4: Material Library**: Implemented `materials.json` and `MaterialDatabase.java` for standardized material property management.
 
 ---
-*Last updated: June 27, 2026 (Updated after InpEnricher unit test and NDK compile fix)*
+*Last updated: June 30, 2026 (Updated after Phase 2 & 3 completion of B4 and C2)*

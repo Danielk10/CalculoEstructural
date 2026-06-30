@@ -9,7 +9,10 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.text.InputType;
 import android.widget.AdapterView;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -29,6 +32,9 @@ import com.diamon.civil.engine.InpEnricher;
 import com.diamon.civil.engine.InpGenerator;
 import com.diamon.civil.engine.MshToInpConverter;
 import com.diamon.civil.engine.NativeFeaCore;
+import com.diamon.civil.engine.OcctBooleanJNI;
+import com.diamon.civil.engine.OcctPrimitivesJNI;
+import com.diamon.civil.engine.StructuralModel;
 import com.diamon.civil.engine.TerminalCommandExecutor;
 import com.diamon.civil.io.FileHelper;
 import com.diamon.civil.util.AssetHelper;
@@ -101,6 +107,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mshConverter = new MshToInpConverter();
         datParser = new DatParser();
 
+        binding.btnCreateBox.setOnClickListener(v -> showCreateBoxDialog());
+        binding.btnCreateCylinder.setOnClickListener(v -> showCreateCylinderDialog());
+        binding.btnCreateSphere.setOnClickListener(v -> showCreateSphereDialog());
+        binding.btnFuse.setOnClickListener(v -> runBooleanOperation(0));
+        binding.btnCut.setOnClickListener(v -> runBooleanOperation(1));
+        
         setupNavigation();
         setupUI();
         setupSceneView();
@@ -173,11 +185,108 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         binding.btnClearResult.setOnClickListener(v -> binding.tvBasicResult.setText("Ready for computation."));
         binding.btnRunAnalysis.setOnClickListener(v -> runAnalysis());
         binding.btnSolveStructural.setOnClickListener(v -> runStructuralAnalysisNative());
+        binding.btnShowBMD.setOnClickListener(v -> binding.diagramView.setDiagramType(1));
+        binding.btnShowSFD.setOnClickListener(v -> binding.diagramView.setDiagramType(2));
+        binding.btnShowAFD.setOnClickListener(v -> binding.diagramView.setDiagramType(3));
+        binding.btnHideDiagram.setOnClickListener(v -> binding.diagramView.setDiagramType(0));
+        
         binding.btnSend.setOnClickListener(v -> sendTerminalCommand());
         binding.btnImportCad.setOnClickListener(v -> openCadFilePicker());
         binding.etCommand.setOnEditorActionListener((v, actionId, event) -> {
             sendTerminalCommand();
             return true;
+        });
+    }
+
+    // ── C1: CAD Primitives ──────────────────────────────────────────────────
+
+    private void showCreateBoxDialog() {
+        showPrimitiveDialog("Create Box", new String[]{"Length", "Width", "Height"}, (values) -> {
+            File outFile = new File(getFilesDir(), "box.brep");
+            boolean success = OcctPrimitivesJNI.createBox(values[0], values[1], values[2], outFile.getAbsolutePath());
+            handlePrimitiveResult(success, outFile);
+        });
+    }
+
+    private void showCreateCylinderDialog() {
+        showPrimitiveDialog("Create Cylinder", new String[]{"Radius", "Height"}, (values) -> {
+            File outFile = new File(getFilesDir(), "cylinder.brep");
+            boolean success = OcctPrimitivesJNI.createCylinder(values[0], values[1], outFile.getAbsolutePath());
+            handlePrimitiveResult(success, outFile);
+        });
+    }
+
+    private void showCreateSphereDialog() {
+        showPrimitiveDialog("Create Sphere", new String[]{"Radius"}, (values) -> {
+            File outFile = new File(getFilesDir(), "sphere.brep");
+            boolean success = OcctPrimitivesJNI.createSphere(values[0], outFile.getAbsolutePath());
+            handlePrimitiveResult(success, outFile);
+        });
+    }
+
+    private interface PrimitiveCallback {
+        void onExecute(double[] values);
+    }
+
+    private void showPrimitiveDialog(String title, String[] labels, PrimitiveCallback callback) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(title);
+        
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(50, 20, 50, 20);
+
+        EditText[] edits = new EditText[labels.length];
+        for (int i = 0; i < labels.length; i++) {
+            edits[i] = new EditText(this);
+            edits[i].setHint(labels[i]);
+            edits[i].setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+            layout.addView(edits[i]);
+        }
+
+        builder.setView(layout);
+        builder.setPositiveButton("Create", (dialog, which) -> {
+            double[] values = new double[labels.length];
+            for (int i = 0; i < labels.length; i++) {
+                try {
+                    values[i] = Double.parseDouble(edits[i].getText().toString());
+                } catch (Exception e) {
+                    values[i] = 1.0;
+                }
+            }
+            callback.onExecute(values);
+        });
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
+    }
+
+    private void handlePrimitiveResult(boolean success, File file) {
+        if (success) {
+            Toast.makeText(this, "Solid created: " + file.getName(), Toast.LENGTH_SHORT).show();
+            // In a real flow, we would trigger Gmsh meshing here
+            runCadPipeline(file);
+        } else {
+            Toast.makeText(this, "Failed to create solid", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void runBooleanOperation(int type) {
+        File fileA = new File(getFilesDir(), "box.brep");
+        File fileB = new File(getFilesDir(), "cylinder.brep");
+        File outFile = new File(getFilesDir(), "boolean_result.brep");
+
+        if (!fileA.exists() || !fileB.exists()) {
+            Toast.makeText(this, "Need Box and Cylinder to perform operation", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        executor.execute(() -> {
+            boolean success = false;
+            if (type == 0) success = OcctBooleanJNI.fuse(fileA.getAbsolutePath(), fileB.getAbsolutePath(), outFile.getAbsolutePath());
+            else if (type == 1) success = OcctBooleanJNI.cut(fileA.getAbsolutePath(), fileB.getAbsolutePath(), outFile.getAbsolutePath());
+
+            boolean finalSuccess = success;
+            runOnUiThread(() -> handlePrimitiveResult(finalSuccess, outFile));
         });
     }
 
@@ -312,6 +421,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void switchModule(int navId) {
         binding.layoutStructural.setVisibility(navId == R.id.nav_structural ? View.VISIBLE : View.GONE);
+        binding.frameGLView.setVisibility(navId == R.id.nav_structural ? View.VISIBLE : View.GONE);
+        binding.diagramView.setVisibility(navId == R.id.nav_structural ? View.VISIBLE : View.GONE);
         binding.layout3DSolid.setVisibility(navId == R.id.nav_3d_solid ? View.VISIBLE : View.GONE);
         binding.layoutConsole.setVisibility(navId == R.id.nav_terminal ? View.VISIBLE : View.GONE);
         
@@ -331,6 +442,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         binding.layoutModulus.setEnabled(editable);
     }
 
+    private void refreshDiagram(DatParser.ParseResult forces, StructuralModel model) {
+        runOnUiThread(() -> {
+            binding.diagramView.setModelAndResults(model, forces);
+            binding.diagramView.setDiagramType(1); // Default to BMD
+        });
+    }
+
     private void runStructuralAnalysisNative() {
         String nodesText = binding.etNodes.getText().toString().trim();
         String elementsText = binding.etElements.getText().toString().trim();
@@ -346,6 +464,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             long modelPtr = 0;
             NativeFeaCore core = new NativeFeaCore();
             try {
+                StructuralModel model = new StructuralModel();
                 // Parse Nodes
                 StringBuilder jsonBuilder = new StringBuilder();
                 jsonBuilder.append("{\n");
@@ -362,6 +481,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     double y = Double.parseDouble(tokens[2].trim());
                     double z = (tokens.length >= 4) ? Double.parseDouble(tokens[3].trim()) : 0.0;
                     parsedNodeIds.add(id);
+                    model.nodes.add(new StructuralModel.Node(id, x, y, z));
 
                     if (parsedNodeIds.size() > 1) {
                         jsonBuilder.append(",\n");
@@ -387,6 +507,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     int id = Integer.parseInt(tokens[0].trim());
                     int n1 = Integer.parseInt(tokens[1].trim());
                     int n2 = Integer.parseInt(tokens[2].trim());
+                    model.elements.add(new StructuralModel.Element(id, n1, n2, "W8x31", "Steel"));
 
                     if (elementCount > 0) {
                         jsonBuilder.append(",\n");
@@ -432,6 +553,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 final String finalResult = solverResult;
                 runOnUiThread(() -> {
                     binding.tvStructuralResult.setText("STRUCTURAL SIMULATION COMPLETED\n================================\n" + finalResult);
+                    File datFile = new File(getFilesDir(), "structural_simulation.dat");
+                    if (datFile.exists()) {
+                        DatParser.ParseResult forces = datParser.parse(datFile);
+                        refreshDiagram(forces, model);
+                    }
                 });
 
             } catch (Exception e) {
@@ -488,12 +614,30 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         DatParser.ParseResult forces = datParser.parse(datFile);
                         String forceSummary = datParser.formatSummary(forces);
                         binding.tvBasicResult.append("\n\n" + forceSummary);
+                        
+                        // Update 2D diagram
+                        try {
+                            double L = Double.parseDouble(length);
+                            StructuralModel model = buildBeamModel(L, 20, section, "Steel");
+                            refreshDiagram(forces, model);
+                        } catch (Exception e) {}
                     }
                 });
             } catch (Exception e) {
                 runOnUiThread(() -> binding.tvBasicResult.setText("CRITICAL ERROR: " + e.getMessage()));
             }
         });
+    }
+
+    private StructuralModel buildBeamModel(double L, int numElements, String section, String material) {
+        StructuralModel model = new StructuralModel();
+        for (int i = 0; i <= numElements; i++) {
+            model.nodes.add(new StructuralModel.Node(i + 1, (L * i / numElements), 0, 0));
+        }
+        for (int i = 1; i <= numElements; i++) {
+            model.elements.add(new StructuralModel.Element(i, i, i + 1, section, material));
+        }
+        return model;
     }
 
     private void cargarModeloExterno(File file) {

@@ -80,8 +80,8 @@ public class InpGenerator {
                 writer.write("*EL PRINT, ELSET=EBEAM\n");
                 writer.write("S\n");
                 // A2: Emit section forces to .dat for DatParser (N, V, M diagrams)
-                writer.write("*SECTION PRINT, ELSET=EBEAM\n");
-                writer.write("RF\n");
+                writer.write("*SECTION PRINT, NAME=SP1, ELSET=EBEAM\n");
+                writer.write("SOF\n");
             } else { // Frequency
                 writer.write("*FREQUENCY\n");
                 writer.write("10\n");
