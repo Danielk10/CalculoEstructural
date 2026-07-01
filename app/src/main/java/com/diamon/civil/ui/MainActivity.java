@@ -148,11 +148,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void setupSceneView() {
+        android.util.Log.d("SceneViewDebug", "setupSceneView called");
         try {
             // Guard against Filament engine not yet initialized when SceneView is gone
             if (binding.sceneView.getCameraNode() != null) {
                 binding.sceneView.getCameraNode().setNearClipPlane(0.1f);
                 binding.sceneView.getCameraNode().setFarClipPlane(1000.0f);
+            } else {
+                android.util.Log.w("SceneViewDebug", "CameraNode is null during setupSceneView");
             }
 
             // Using SceneView's engine directly for light configuration if LightNode is problematic,
@@ -173,11 +176,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             loadHelloWorldModel();
         } catch (Exception e) {
-            android.util.Log.w("MainActivity", "SceneView setup deferred: " + e.getMessage());
+            android.util.Log.e("SceneViewDebug", "Error in setupSceneView: " + e.getMessage(), e);
         }
     }
 
     private void loadHelloWorldModel() {
+        android.util.Log.d("SceneViewDebug", "loadHelloWorldModel called");
         ModelNode modelNode = new ModelNode(
                 binding.sceneView.getEngine(),
                 "models/test_beam.glb",
@@ -189,6 +193,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         );
         binding.sceneView.addChild(modelNode);
         modelNode.centerModel(new Float3(0.0f, 0.0f, 0.0f));
+        android.util.Log.d("SceneViewDebug", "ModelNode added to SceneView");
     }
 
     @Override
