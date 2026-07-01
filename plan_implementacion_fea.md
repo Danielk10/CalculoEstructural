@@ -6,17 +6,17 @@ Motor CalculiX compilado · CalculiX 2.23 + SPOOLES + ARPACK + OpenBLAS + Gmsh +
 ---
 
 ## Progreso del Proyecto
-- **Progreso total estimado:** 95% (basado en items completados vs pendientes)
-- **Completados:** 31 ítems
-- **En progreso:** 1 ítem
-- **Pendientes:** 0 ítems
+- **Progreso total estimado:** 90%
+- **Completados:** 28 ítems
+- **En progreso:** 3 ítems
+- **Pendientes:** 2 ítems
 
 ---
 
 ## Fase 0 + Fase 1 — Completados
 
 - Navigation Drawer + tabs MODEL/TERMINAL/VIEWER
-- SceneView v0.10.0 integrado (Filament)
+- SceneView v4.18.0 integrado (Compose Bridge)
 - FRD → GLB converter en C++/tinygltf (TET4 + TRIA3)
 - Heatmap Von Mises (azul a rojo) en vértices
 - NativeFeaCore JNI wrapper completo
@@ -68,7 +68,7 @@ Motor CalculiX compilado · CalculiX 2.23 + SPOOLES + ARPACK + OpenBLAS + Gmsh +
 ---
 
 ## Etapa C: Editor 3D Sólidos — Modo Abaqus
-**ETA:** Finalizado | **Progreso:** 100%
+**ETA:** En progreso | **Progreso:** 90%
 
 ### C1. CAD Primitivas — Box, Cylinder, Sphere vía OCCT
 - **Estado:** COMPLETADO
@@ -81,7 +81,7 @@ Motor CalculiX compilado · CalculiX 2.23 + SPOOLES + ARPACK + OpenBLAS + Gmsh +
 ### C3. Ray-Casting — Selección táctil de caras
 - **Estado:** COMPLETADO (Base)
 - **Archivos:** `FaceSelector.java`, `MainActivity.java`
-- **Descripción:** Detección de toque en SceneView integrada.
+- **Descripción:** Detección de toque en SceneView integrada. Falta refinamiento para picking exacto de caras.
 
 ### C4. Material Library UI
 - **Estado:** COMPLETADO
@@ -102,10 +102,11 @@ Motor CalculiX compilado · CalculiX 2.23 + SPOOLES + ARPACK + OpenBLAS + Gmsh +
 - **Descripción:** Permite cargar archivos .inp externos en el editor estructural.
 
 ### D2. PDF Reporting
-- **Estado:** Pendiente (Post-Lanzamiento)
+- **Estado:** PENDIENTE
+- **Descripción:** Generación de reportes técnicos con iText7.
 
 ### D3. Performance — Threading y feedback al usuario
 - **Estado:** COMPLETADO (ExecutorService integrado en MainActivity)
 
 ### D4. Play Store — Publicación
-- **Estado:** Pendiente
+- **Estado:** PENDIENTE

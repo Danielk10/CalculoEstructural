@@ -31,6 +31,7 @@ Este documento unifica toda la auditoría técnica del proyecto Android principa
 *   **`FrameGLSurfaceView.java`**: Vista contenedor para el renderizado 3D de pórticos mediante OpenGL ES.
 *   **`FrameRenderer.java`**: Clase que implementa la lógica de dibujo OpenGL (cuadrícula, nodos, vigas).
 *   **`DiagramView.java`**: Vista para renderizar diagramas de esfuerzos (BMD/SFD).
+*   **`SceneViewBridge.kt`**: Puente de integración para `SceneView` v4.18.0 utilizando Jetpack Compose.
 
 ### 1.4. Utilitarios (`.../util`)
 *   **`FaceSelector.java`**: Lógica para implementar picking (selección táctil) de caras en el visor 3D.
@@ -78,6 +79,7 @@ Este documento unifica toda la auditoría técnica del proyecto Android principa
 | `FrameGLSurfaceView.java` | Vista render 3D. | **B1** |
 | `FrameRenderer.java` | Lógica dibujo. | **B1** |
 | `DiagramView.java` | Visualizador diagramas. | **B4** |
+| `SceneViewBridge.kt` | Integración SceneView + Compose. | **A1** |
 | `FaceSelector.java` | Selección táctil 3D. | **C3** |
 | `AnalysisModel.*` | Estructura nativa FEA. | **A1** |
 | `ProjectStore.*` | Persistencia estado. | **A1** |

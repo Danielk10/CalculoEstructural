@@ -46,10 +46,13 @@ This document tracks the tasks completed and the current status of the project.
 - [x] **B4: Diagram Engine**: Implemented `DiagramView` to render BMD, SFD, and AFD diagrams using Android Canvas. Fixed `*SECTION PRINT` error in INP generation.
 - [x] **C1: CAD Primitives**: Implemented `OcctPrimitivesJNI` (Java/C++) to create Box, Cylinder, and Sphere solids using OpenCASCADE.
 - [x] **C2: Boolean Operations**: Implemented `OcctBooleanJNI` (Java/C++) for FUSE and CUT operations using OpenCASCADE.
-- [x] **C3: Ray-Casting & Face Selection**: Implemented basic touch selection on 3D models in `SceneView`.
+- [x] **C3: Ray-Casting & Face Selection**: Implemented basic touch detection in `SceneView`. High-fidelity face picking is in development.
 - [x] **C4: Material Library**: Implemented `materials.json` and `MaterialDatabase.java`.
 - [x] **C5: Mesh Controls**: Integrated mesh density slider to control Gmsh discretization quality.
 - [x] **D1: INP Importer**: Implemented `AbaqusInpImporter` to allow importing external .inp files into the Structural Editor.
+- [x] **D3: Performance**: Integrated `ExecutorService` in `MainActivity.java` for background processing.
+- [ ] **D2: PDF Reporting**: Pending implementation.
+- [ ] **D4: Play Store Publication**: Pending.
 
 ---
 *Last updated: June 30, 2026 (Updated after Phase 2 & 3 advanced feature implementation)*
