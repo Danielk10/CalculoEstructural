@@ -206,23 +206,26 @@
                 </LinearLayout>
             </androidx.core.widget.NestedScrollView>
 
-            <FrameLayout
+            <LinearLayout
+                android:id="@+id/containerStructural"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1">
-                
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:visibility="gone">
+
                 <com.diamon.civil.ui.FrameGLSurfaceView
                     android:id="@+id/frameGLView"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:visibility="gone" />
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
 
                 <com.diamon.civil.ui.DiagramView
                     android:id="@+id/diagramView"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:visibility="gone" />
-            </FrameLayout>
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
 
             <!-- MODULE 2: 3D SOLID ANALYSIS (EXISTING) -->
             <LinearLayout

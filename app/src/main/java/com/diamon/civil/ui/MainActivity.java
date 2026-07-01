@@ -527,6 +527,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void switchModule(int navId) {
         binding.layoutStructural.setVisibility(navId == R.id.nav_structural ? View.VISIBLE : View.GONE);
+        binding.containerStructural.setVisibility(navId == R.id.nav_structural ? View.VISIBLE : View.GONE);
         binding.frameGLView.setVisibility(navId == R.id.nav_structural ? View.VISIBLE : View.GONE);
         binding.diagramView.setVisibility(navId == R.id.nav_structural ? View.VISIBLE : View.GONE);
         binding.layout3DSolid.setVisibility(navId == R.id.nav_3d_solid ? View.VISIBLE : View.GONE);
