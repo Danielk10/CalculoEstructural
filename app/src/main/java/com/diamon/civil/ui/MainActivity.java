@@ -36,6 +36,7 @@ import com.diamon.civil.engine.MshToInpConverter;
 import com.diamon.civil.engine.NativeFeaCore;
 import com.diamon.civil.engine.OcctBooleanJNI;
 import com.diamon.civil.engine.OcctPrimitivesJNI;
+import com.diamon.civil.engine.ReportGenerator;
 import com.diamon.civil.engine.StructuralModel;
 import com.diamon.civil.engine.TerminalCommandExecutor;
 import com.diamon.civil.io.AbaqusInpImporter;
@@ -66,12 +67,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private GmshRunner gmshRunner;
     private MshToInpConverter mshConverter;
     private DatParser datParser;
+    private DatParser.ParseResult lastParseResult;
 
     private final ActivityResultLauncher<Intent> importLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     handleImport(result.getData().getData());
+                }
+            }
+    );
+
+    private final ActivityResultLauncher<Intent> exportPdfLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    handleExportPdf(result.getData().getData());
                 }
             }
     );
@@ -512,6 +523,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         binding.tvStructuralResult.setText("Executing Native CalculiX Solver...");
+        binding.pbStructural.setVisibility(View.VISIBLE);
+        binding.btnSolveStructural.setEnabled(false);
 
         executor.execute(() -> {
             long modelPtr = 0;
@@ -606,10 +619,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 final String finalResult = solverResult;
                 runOnUiThread(() -> {
                     binding.tvStructuralResult.setText("STRUCTURAL SIMULATION COMPLETED\n================================\n" + finalResult);
+                    binding.pbStructural.setVisibility(View.GONE);
+                    binding.btnSolveStructural.setEnabled(true);
                     File datFile = new File(getFilesDir(), "structural_simulation.dat");
                     if (datFile.exists()) {
-                        DatParser.ParseResult forces = datParser.parse(datFile);
-                        refreshDiagram(forces, model);
+                        lastParseResult = datParser.parse(datFile);
+                        refreshDiagram(lastParseResult, model);
                     }
                 });
 
@@ -617,6 +632,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 final String errorMsg = e.getMessage();
                 runOnUiThread(() -> {
                     binding.tvStructuralResult.setText("CRITICAL ERROR: " + errorMsg);
+                    binding.pbStructural.setVisibility(View.GONE);
+                    binding.btnSolveStructural.setEnabled(true);
                 });
             } finally {
                 if (modelPtr != 0) {
@@ -638,6 +655,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         int support = binding.spinnerSupport.getSelectedItemPosition();
 
         binding.tvBasicResult.setText("Starting CalculiX Core Engine...");
+        binding.pb3D.setVisibility(View.VISIBLE);
+        binding.btnRunAnalysis.setEnabled(false);
         
         executor.execute(() -> {
             try {
@@ -656,6 +675,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 final boolean finalConverted = converted;
                 runOnUiThread(() -> {
                     binding.tvBasicResult.setText("ANALYSIS COMPLETE\n=================\n" + result);
+                    binding.pb3D.setVisibility(View.GONE);
+                    binding.btnRunAnalysis.setEnabled(true);
                     if (finalConverted) {
                         Toast.makeText(this, "3D Model Generated", Toast.LENGTH_SHORT).show();
                         cargarModeloExterno(glbFile);
@@ -664,20 +685,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     // A2: Parse section forces from .dat
                     File datFile = new File(getFilesDir(), "structural_simulation.dat");
                     if (datFile.exists()) {
-                        DatParser.ParseResult forces = datParser.parse(datFile);
-                        String forceSummary = datParser.formatSummary(forces);
+                        lastParseResult = datParser.parse(datFile);
+                        String forceSummary = datParser.formatSummary(lastParseResult);
                         binding.tvBasicResult.append("\n\n" + forceSummary);
                         
                         // Update 2D diagram
                         try {
                             double L = Double.parseDouble(length);
                             StructuralModel model = buildBeamModel(L, 20, section, "Steel");
-                            refreshDiagram(forces, model);
+                            refreshDiagram(lastParseResult, model);
                         } catch (Exception e) {}
                     }
                 });
             } catch (Exception e) {
-                runOnUiThread(() -> binding.tvBasicResult.setText("CRITICAL ERROR: " + e.getMessage()));
+                runOnUiThread(() -> {
+                    binding.tvBasicResult.setText("CRITICAL ERROR: " + e.getMessage());
+                    binding.pb3D.setVisibility(View.GONE);
+                    binding.btnRunAnalysis.setEnabled(true);
+                });
             }
         });
     }
@@ -758,6 +783,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     .putExtra(Intent.EXTRA_TITLE, "FEA_Report.txt");
             exportLauncher.launch(intent);
             return true;
+        } else if (id == R.id.action_export_pdf) {
+            Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
+                    .addCategory(Intent.CATEGORY_OPENABLE)
+                    .setType("application/pdf")
+                    .putExtra(Intent.EXTRA_TITLE, "FEA_Analysis_Report.pdf");
+            exportPdfLauncher.launch(intent);
+            return true;
         } else if (id == R.id.action_export_all) {
             Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
                     .addCategory(Intent.CATEGORY_OPENABLE)
@@ -828,6 +860,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             String content = binding.tvLog.getText().toString() + "\n\n--- RESULTS ---\n" + binding.tvBasicResult.getText().toString();
             boolean success = fileHelper.exportText(uri, content);
             runOnUiThread(() -> Toast.makeText(this, success ? "Report Exported" : "Export Failed", Toast.LENGTH_SHORT).show());
+        });
+    }
+
+    private void handleExportPdf(Uri uri) {
+        if (uri == null) return;
+        executor.execute(() -> {
+            File tempFile = new File(getCacheDir(), "temp_report.pdf");
+            String summary = binding.tvBasicResult.getText().toString();
+            List<DatParser.SectionForces> forces = (lastParseResult != null) ? lastParseResult.forces : null;
+
+            boolean success = ReportGenerator.generateReport(tempFile, "FEA Structural Analysis Report", summary, forces);
+
+            if (success) {
+                boolean copied = fileHelper.exportFile(tempFile, uri);
+                runOnUiThread(() -> {
+                    Toast.makeText(this, copied ? "PDF Report Exported" : "Export Failed", Toast.LENGTH_SHORT).show();
+                    tempFile.delete();
+                });
+            } else {
+                runOnUiThread(() -> Toast.makeText(this, "Failed to generate PDF", Toast.LENGTH_SHORT).show());
+            }
         });
     }
 

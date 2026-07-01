@@ -102,11 +102,13 @@ Motor CalculiX compilado · CalculiX 2.23 + SPOOLES + ARPACK + OpenBLAS + Gmsh +
 - **Descripción:** Permite cargar archivos .inp externos en el editor estructural.
 
 ### D2. PDF Reporting
-- **Estado:** PENDIENTE
-- **Descripción:** Generación de reportes técnicos con iText7.
+- **Estado:** COMPLETADO
+- **Archivos:** `ReportGenerator.java`
+- **Descripción:** Generación de reportes técnicos con iText7. Incluye tablas de resultados.
 
 ### D3. Performance — Threading y feedback al usuario
-- **Estado:** COMPLETADO (ExecutorService integrado en MainActivity)
+- **Estado:** COMPLETADO
+- **Descripción:** ExecutorService integrado y ProgressBars para retroalimentación visual.
 
 ### D4. Play Store — Publicación
 - **Estado:** PENDIENTE

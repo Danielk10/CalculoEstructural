@@ -50,8 +50,8 @@ This document tracks the tasks completed and the current status of the project.
 - [x] **C4: Material Library**: Implemented `materials.json` and `MaterialDatabase.java`.
 - [x] **C5: Mesh Controls**: Integrated mesh density slider to control Gmsh discretization quality.
 - [x] **D1: INP Importer**: Implemented `AbaqusInpImporter` to allow importing external .inp files into the Structural Editor.
-- [x] **D3: Performance**: Integrated `ExecutorService` in `MainActivity.java` for background processing.
-- [ ] **D2: PDF Reporting**: Pending implementation.
+- [x] **D3: Performance**: Integrated `ExecutorService` in `MainActivity.java` and added `ProgressBar` for visual feedback.
+- [x] **D2: PDF Reporting**: Implemented `ReportGenerator.java` using iText7 for automated technical reports.
 - [ ] **D4: Play Store Publication**: Pending.
 
 ---

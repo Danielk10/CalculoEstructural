@@ -7,7 +7,11 @@
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_export"
-        android:title="Exportar Reporte"
+        android:title="Exportar Reporte (.txt)"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_export_pdf"
+        android:title="Exportar Reporte (PDF)"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_export_all"

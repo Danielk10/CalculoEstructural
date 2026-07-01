@@ -65,6 +65,7 @@ dependencies {
     implementation libs.constraintlayout
     implementation libs.material
     implementation libs.sceneview
+    implementation libs.itext7.core
     testImplementation libs.junit
     androidTestImplementation libs.espresso.core
     androidTestImplementation libs.ext.junit

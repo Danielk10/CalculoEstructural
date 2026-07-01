@@ -173,7 +173,16 @@
                         android:layout_height="56dp"
                         android:text="RUN 2D SOLVER"
                         app:cornerRadius="8dp"
-                        android:layout_marginBottom="16dp"/>
+                        android:layout_marginBottom="8dp"/>
+
+                    <ProgressBar
+                        android:id="@+id/pbStructural"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:indeterminate="true"
+                        android:visibility="gone"
+                        android:layout_marginBottom="8dp" />
 
                     <TextView
                         android:id="@+id/tvStructuralResult"
@@ -374,6 +383,15 @@
                                 android:text="SOLVE &amp; GENERATE 3D"
                                 android:textStyle="bold"
                                 app:cornerRadius="16dp"
+                                android:layout_marginBottom="8dp" />
+
+                            <ProgressBar
+                                android:id="@+id/pb3D"
+                                style="?android:attr/progressBarStyleHorizontal"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:indeterminate="true"
+                                android:visibility="gone"
                                 android:layout_marginBottom="8dp" />
 
                             <!-- A1: CAD Pipeline button -->

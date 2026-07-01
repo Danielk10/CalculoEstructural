@@ -69,6 +69,22 @@ public class FileHelper {
         }
     }
 
+    public boolean exportFile(File sourceFile, Uri destUri) {
+        try (InputStream is = new FileInputStream(sourceFile);
+             OutputStream os = contentResolver.openOutputStream(destUri)) {
+            if (os == null) return false;
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = is.read(buffer)) != -1) {
+                os.write(buffer, 0, read);
+            }
+            os.flush();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public boolean zipFiles(File[] files, Uri destUri) {
         try (OutputStream os = contentResolver.openOutputStream(destUri);
              ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(os))) {

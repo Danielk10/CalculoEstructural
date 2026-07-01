@@ -69,7 +69,7 @@ The system is built on a shared C++ NDK core that handles heavy computation, par
 
 - [x] **Performance**: Multithreading for meshing and result parsing (ExecutorService in MainActivity).
 - [x] **Abaqus .inp Importer**: High-fidelity Abaqus format compatibility (AbaqusInpImporter.java).
-- [ ] **Reporting**: Automated PDF generation with simulation data and screenshots (Pending).
+- [x] **Reporting**: Automated PDF generation with simulation data and result tables (ReportGenerator.java).
 - [ ] **Mixed Modeling**: Support for models containing both Solids and Structural elements.
 
 ---

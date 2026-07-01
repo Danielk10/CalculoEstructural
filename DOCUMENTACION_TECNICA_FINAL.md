@@ -11,6 +11,7 @@ Este documento unifica toda la auditoría técnica del proyecto Android principa
 *   **`StructuralInpGenerator.java`**: Lógica de conversión de `StructuralModel` al formato de texto `.inp` de CalculiX (pórticos).
 *   **`CalculixExecutor.java`**: Gestiona la ejecución de binarios (`ccx`, `gmsh`) mediante `ProcessBuilder`, manejando entornos nativos y threads.
 *   **`NativeFeaCore.java`**: Wrapper JNI que expone funciones de FEA escritas en C++ a la capa Java.
+*   **`ReportGenerator.java`**: Generador de reportes técnicos en formato PDF utilizando iText7.
 *   **`MaterialDatabase.java`**: Carga y gestiona los materiales disponibles desde `materials.json`.
 *   **`SectionLibrary.java`**: Carga y gestiona las secciones transversales desde `sections.json`.
 *   **`GmshRunner.java`**: Lógica específica para ejecutar el enmallador Gmsh sobre geometrías.
@@ -68,6 +69,7 @@ Este documento unifica toda la auditoría técnica del proyecto Android principa
 | `StructuralInpGenerator.java`| Generación .inp. | **B3** |
 | `CalculixExecutor.java` | Ejecución binarios nativos. | **A2** |
 | `NativeFeaCore.java` | Interface JNI lógica nativa. | **A1** |
+| `ReportGenerator.java` | Generación de reportes PDF. | **D2** |
 | `MaterialDatabase.java` | Gestión materiales (JSON). | **C4** |
 | `SectionLibrary.java` | Gestión secciones (JSON). | **B2** |
 | `GmshRunner.java` | Enmallador Gmsh. | **A1** |
