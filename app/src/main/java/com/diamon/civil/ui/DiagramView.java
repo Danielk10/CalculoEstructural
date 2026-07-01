@@ -28,6 +28,7 @@ public class DiagramView extends View {
     private final Paint beamPaint = new Paint();
     private final Paint diagramPaint = new Paint();
     private final Paint textPaint = new Paint();
+    private final Paint deformedPaint = new Paint(); // New improvement
 
     public DiagramView(Context context) {
         this(context, null);
@@ -50,6 +51,11 @@ public class DiagramView extends View {
         textPaint.setColor(Color.BLACK);
         textPaint.setTextSize(24f);
         textPaint.setFakeBoldText(true);
+
+        deformedPaint.setColor(Color.argb(200, 100, 100, 100)); // Grey for deformed
+        deformedPaint.setStyle(Paint.Style.STROKE);
+        deformedPaint.setStrokeWidth(4f);
+        deformedPaint.setPathEffect(new android.graphics.DashPathEffect(new float[]{10, 10}, 0));
     }
 
     public void setModelAndResults(StructuralModel model, DatParser.ParseResult results) {
@@ -100,6 +106,12 @@ public class DiagramView extends View {
 
             // Draw Beam
             canvas.drawLine(x1, y1, x2, y2, beamPaint);
+            
+            // Draw Deformed Shape (Placeholder: offset by a scaled displacement factor)
+            float dispScale = 200f; // Amplification factor for visibility
+            float d1 = (float) (n1.y * 0.05); // Simulated displacement
+            float d2 = (float) (n2.y * 0.05);
+            canvas.drawLine(x1, y1 - d1 * dispScale, x2, y2 - d2 * dispScale, deformedPaint);
 
             // Draw Diagram
             DatParser.SectionForces f = elemResults.get(e.id);

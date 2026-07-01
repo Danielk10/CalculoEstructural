@@ -71,6 +71,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private DatParser datParser;
     private DatParser.ParseResult lastParseResult;
     private final List<FaceCondition> faceConditions = new ArrayList<>();
+    
+    // UI State Controller
+    private class UIStateController {
+        void showLoading(String message) {
+            binding.pbStructural.setVisibility(View.VISIBLE);
+            binding.pb3D.setVisibility(View.VISIBLE);
+            binding.tvStructuralResult.setText(message);
+            binding.tvBasicResult.setText(message);
+            binding.btnSolveStructural.setEnabled(false);
+            binding.btnRunAnalysis.setEnabled(false);
+        }
+
+        void hideLoading() {
+            binding.pbStructural.setVisibility(View.GONE);
+            binding.pb3D.setVisibility(View.GONE);
+            binding.btnSolveStructural.setEnabled(true);
+            binding.btnRunAnalysis.setEnabled(true);
+        }
+    }
+    private final UIStateController uiState = new UIStateController();
 
     private final ActivityResultLauncher<Intent> importLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -290,7 +310,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     binding.frameGLView.requestRender();
                 });
             } catch (Exception e) {
-                runOnUiThread(() -> Toast.makeText(this, "Import Failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    Toast.makeText(this, "Import Failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
             }
         });
     }
@@ -432,7 +455,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         gmshRunner.meshAsync(cadFile, density, new GmshRunner.GmshCallback() {
             @Override
             public void onSuccess(File mshFile) {
-                runOnUiThread(() -> binding.tvBasicResult.setText("Mesh OK. Converting to INP..."));
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    binding.tvBasicResult.setText("Mesh OK. Converting to INP...");
+                });
                 executor.execute(() -> {
                     try {
                         // Convert .msh → .inp skeleton
@@ -442,6 +468,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                         if (!conv.success) {
                             runOnUiThread(() -> {
+                                if (isFinishing() || isDestroyed()) return;
                                 binding.tvBasicResult.setText("Conversion Error: " + conv.message);
                                 binding.btnImportCad.setEnabled(true);
                             });
@@ -460,8 +487,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         if (enrichedInp.exists()) enrichedInp.renameTo(finalInp);
 
                         // Run CalculiX
-                        runOnUiThread(() -> binding.tvBasicResult.setText(
-                                conv.message + "\nRunning CalculiX..."));
+                        runOnUiThread(() -> {
+                            if (isFinishing() || isDestroyed()) return;
+                            binding.tvBasicResult.setText(
+                                conv.message + "\nRunning CalculiX...");
+                        });
                         String ccxResult = calculixExecutor.executeCalculix("cad_simulation");
 
                         // Convert FRD → GLB
@@ -474,6 +504,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         final boolean finalConverted = converted;
                         final String finalCcx = ccxResult;
                         runOnUiThread(() -> {
+                            if (isFinishing() || isDestroyed()) return;
                             binding.tvBasicResult.setText(
                                     "CAD PIPELINE COMPLETE\n" + conv.message + "\n\n" + finalCcx);
                             binding.btnImportCad.setEnabled(true);
@@ -486,6 +517,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         });
                     } catch (Exception e) {
                         runOnUiThread(() -> {
+                            if (isFinishing() || isDestroyed()) return;
                             binding.tvBasicResult.setText("Pipeline Error: " + e.getMessage());
                             binding.btnImportCad.setEnabled(true);
                         });
@@ -496,6 +528,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onError(String message) {
                 runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
                     binding.tvBasicResult.setText("Gmsh Error: " + message);
                     binding.btnImportCad.setEnabled(true);
                 });

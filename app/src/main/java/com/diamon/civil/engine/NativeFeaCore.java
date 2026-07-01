@@ -2,6 +2,9 @@ package com.diamon.civil.engine;
 
 public class NativeFeaCore {
     static {
+        System.loadLibrary("c++_shared");
+        System.loadLibrary("openblas");
+        System.loadLibrary("gmsh");
         System.loadLibrary("calculoestructural");
     }
 
