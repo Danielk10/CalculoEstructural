@@ -4,31 +4,37 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
-import io.github.sceneview.SceneView
+import dev.romainguy.kotlin.math.Float3
+import io.github.sceneview.Scene
+import io.github.sceneview.node.CubeNode
 import io.github.sceneview.node.ModelNode
 import io.github.sceneview.rememberEngine
 import io.github.sceneview.rememberModelLoader
 import io.github.sceneview.rememberModelInstance
 
-fun setSceneViewContent(composeView: ComposeView, modelPath: String) {
+fun setSceneViewContent(composeView: ComposeView, modelPath: String?) {
     composeView.setContent {
         SceneViewWrapper(modelPath)
     }
 }
 
 @Composable
-fun SceneViewWrapper(modelPath: String) {
+fun SceneViewWrapper(modelPath: String?) {
     val engine = rememberEngine()
     val modelLoader = rememberModelLoader(engine)
-    val modelInstance = rememberModelInstance(modelLoader, modelPath)
     
-    SceneView(
+    Scene(
         modifier = Modifier.fillMaxSize(),
-        engine = engine,
-        modelLoader = modelLoader
+        engine = engine
     ) {
-        modelInstance?.let {
-            ModelNode(modelInstance = it)
+        if (modelPath != null) {
+            val modelInstance = rememberModelInstance(modelLoader, modelPath)
+            modelInstance?.let {
+                ModelNode(modelInstance = it)
+            }
+        } else {
+            // Cubo por defecto si no hay modelo
+            CubeNode(size = Float3(0.5f, 0.5f, 0.5f))
         }
     }
 }
