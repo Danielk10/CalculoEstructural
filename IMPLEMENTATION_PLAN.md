@@ -71,7 +71,7 @@ The system is built on a shared C++ NDK core that handles heavy computation, par
 - [x] **Abaqus .inp Importer**: High-fidelity Abaqus format compatibility (AbaqusInpImporter.java).
 - [x] **Reporting**: Automated PDF generation with simulation data and result tables (ReportGenerator.java).
 - [x] **Mixed Modeling**: Support for models containing both Solids and Structural elements (Implemented in AnalysisModel.cpp).
-- [ ] **Advanced Picking**: High-fidelity ray-casting for face/node selection (Basic implemented, needs refinement).
+- [x] **Advanced Picking**: High-fidelity ray-casting for face/node selection (Implemented via SceneViewBridge + OnHitListener).
 
 
 ---

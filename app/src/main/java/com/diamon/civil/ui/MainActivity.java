@@ -29,6 +29,7 @@ import com.diamon.civil.R;
 import com.diamon.civil.databinding.ActivityMainBinding;
 import com.diamon.civil.engine.CalculixExecutor;
 import com.diamon.civil.engine.DatParser;
+import com.diamon.civil.engine.FaceCondition;
 import com.diamon.civil.engine.GmshRunner;
 import com.diamon.civil.engine.InpEnricher;
 import com.diamon.civil.engine.InpGenerator;
@@ -45,6 +46,7 @@ import com.diamon.civil.util.AssetHelper;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 
+import io.github.sceneview.collision.HitResult;
 import io.github.sceneview.node.ModelNode;
 import io.github.sceneview.node.LightNode;
 import dev.romainguy.kotlin.math.Float3;
@@ -55,7 +57,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, OnHitListener {
 
     private ActivityMainBinding binding;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -68,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private MshToInpConverter mshConverter;
     private DatParser datParser;
     private DatParser.ParseResult lastParseResult;
+    private final List<FaceCondition> faceConditions = new ArrayList<>();
 
     private final ActivityResultLauncher<Intent> importLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -141,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
 
         // Initialize Compose-based SceneView
-        SceneViewBridgeKt.setSceneViewContent(binding.sceneViewComposeContainer, "models/test_beam.glb");
+        SceneViewBridgeKt.setSceneViewContent(binding.sceneViewComposeContainer, "models/test_beam.glb", this);
 
         setupNavigation();
         setupUI();
@@ -220,6 +223,36 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Simplified: Highlight the model if touched
         Toast.makeText(this, "Face selected at: " + x + ", " + y, Toast.LENGTH_SHORT).show();
         // In a real flow, we would use Ray-Casting to find the exact face
+    }
+
+    @Override
+    public void onHit(HitResult hitResult) {
+        if (hitResult != null && hitResult.getNode() instanceof ModelNode) {
+            runOnUiThread(() -> {
+                Toast.makeText(this, "Surface Selected", Toast.LENGTH_SHORT).show();
+                showFaceConditionDialog(1); // Simplified: surface ID 1
+            });
+        }
+    }
+
+    private void showFaceConditionDialog(int surfaceId) {
+        String[] options = {"Fixed Support", "Pressure (1000 N)", "Mesh Refinement"};
+        new AlertDialog.Builder(this)
+                .setTitle("Surface " + surfaceId + " Options")
+                .setItems(options, (dialog, which) -> {
+                    FaceCondition.Type type = FaceCondition.Type.FIXED;
+                    double value = 0.0;
+                    if (which == 1) {
+                        type = FaceCondition.Type.PRESSURE;
+                        value = -1000.0;
+                    } else if (which == 2) {
+                        type = FaceCondition.Type.MESH_REFINEMENT;
+                        value = 1.0;
+                    }
+                    faceConditions.add(new FaceCondition(surfaceId, type, value));
+                    Toast.makeText(this, "Condition applied to surface " + surfaceId, Toast.LENGTH_SHORT).show();
+                })
+                .show();
     }
 
     private final ActivityResultLauncher<Intent> inpFileLauncher = registerForActivityResult(
@@ -420,7 +453,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         String modulus = binding.etModulus.getText().toString();
                         String density2 = binding.etDensity.getText().toString();
                         new InpEnricher().enrich(inpSkeleton, enrichedInp,
-                                modulus, "0.3", density2, "-1000.0");
+                                modulus, "0.3", density2, faceConditions);
 
                         // Copy to final job name (CalculiX needs file without .inp)
                         File finalInp = new File(getFilesDir(), "cad_simulation.inp");
@@ -761,7 +794,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void cargarModeloExterno(File file) {
-        SceneViewBridgeKt.setSceneViewContent(binding.sceneViewComposeContainer, file.getAbsolutePath());
+        SceneViewBridgeKt.setSceneViewContent(binding.sceneViewComposeContainer, file.getAbsolutePath(), this);
     }
 
     private void sendTerminalCommand() {

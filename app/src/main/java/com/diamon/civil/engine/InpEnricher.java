@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class InpEnricher {
 
-    public void enrich(File gmshInp, File targetInp, String modulus, String poisson, String density, String forceZ) throws IOException {
+    public void enrich(File gmshInp, File targetInp, String modulus, String poisson, String density, List<FaceCondition> conditions) throws IOException {
         List<String> lines = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(gmshInp))) {
             String line;
@@ -51,17 +51,41 @@ public class InpEnricher {
             writer.write("*STATIC");
             writer.newLine();
 
-            // Boundary Conditions (Simplified: assuming NSET 'Surface1' is fixed)
-            writer.write("*BOUNDARY");
-            writer.newLine();
-            writer.write("Surface1, 1, 3, 0.0");
-            writer.newLine();
+            // Boundary Conditions & Loads
+            if (conditions == null || conditions.isEmpty()) {
+                // Default fallback if no UI selection
+                writer.write("*BOUNDARY");
+                writer.newLine();
+                writer.write("Surface1, 1, 3, 0.0");
+                writer.newLine();
+                writer.write("*CLOAD");
+                writer.newLine();
+                writer.write("Surface2, 3, -1000.0");
+                writer.newLine();
+            } else {
+                boolean boundaryStarted = false;
+                boolean loadStarted = false;
 
-            // Loads (Simplified: assuming NSET 'Surface2' has a pressure or point load)
-            writer.write("*CLOAD");
-            writer.newLine();
-            writer.write("Surface2, 3, " + forceZ);
-            writer.newLine();
+                for (FaceCondition cond : conditions) {
+                    if (cond.type == FaceCondition.Type.FIXED) {
+                        if (!boundaryStarted) {
+                            writer.write("*BOUNDARY");
+                            writer.newLine();
+                            boundaryStarted = true;
+                        }
+                        writer.write("Surface" + cond.surfaceId + ", 1, 3, 0.0");
+                        writer.newLine();
+                    } else if (cond.type == FaceCondition.Type.PRESSURE) {
+                        if (!loadStarted) {
+                            writer.write("*CLOAD");
+                            writer.newLine();
+                            loadStarted = true;
+                        }
+                        writer.write("Surface" + cond.surfaceId + ", 3, " + cond.value);
+                        writer.newLine();
+                    }
+                }
+            }
 
             // Outputs
             writer.write("*NODE FILE");

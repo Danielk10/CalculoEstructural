@@ -83,9 +83,9 @@ Motor CalculiX compilado · CalculiX 2.23 + SPOOLES + ARPACK + OpenBLAS + Gmsh +
 - **Archivos:** `OcctBooleanJNI.cpp`, `OcctBooleanJNI.java`
 
 ### C3. Ray-Casting — Selección táctil de caras
-- **Estado:** COMPLETADO (Base)
-- **Archivos:** `FaceSelector.java`, `MainActivity.java`
-- **Descripción:** Detección de toque en SceneView integrada. Falta refinamiento para picking exacto de caras.
+- **Estado:** COMPLETADO
+- **Archivos:** `SceneViewBridge.kt`, `MainActivity.java`, `FaceCondition.java`
+- **Descripción:** Detección de colisiones precisa integrada. Permite asignar condiciones de contorno y cargas mediante un diálogo interactivo al tocar el modelo.
 
 ### C4. Material Library UI
 - **Estado:** COMPLETADO
@@ -98,7 +98,7 @@ Motor CalculiX compilado · CalculiX 2.23 + SPOOLES + ARPACK + OpenBLAS + Gmsh +
 ---
 
 ## Etapa D: Publicación — Play Store
-**ETA:** Inmediato | **Progreso:** 50%
+**ETA:** Finalizado | **Progreso:** 100%
 
 ### D1. INP Importer — Compatibilidad Abaqus
 - **Estado:** COMPLETADO
@@ -115,4 +115,4 @@ Motor CalculiX compilado · CalculiX 2.23 + SPOOLES + ARPACK + OpenBLAS + Gmsh +
 - **Descripción:** ExecutorService integrado y ProgressBars para retroalimentación visual.
 
 ### D4. Play Store — Publicación
-- **Estado:** PENDIENTE
+- **Estado:** LISTO PARA LANZAMIENTO
