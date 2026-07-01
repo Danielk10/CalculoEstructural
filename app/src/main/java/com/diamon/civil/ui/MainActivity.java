@@ -128,16 +128,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
-        binding.sceneView.setOnTouchListener((v, event) -> {
-            if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                handleSceneTouch(event.getX(), event.getY());
-            }
-            return false; // Let SceneView handle camera rotation
-        });
+        // Initialize Compose-based SceneView
+        SceneViewBridgeKt.setSceneViewContent(binding.sceneViewComposeContainer, "models/test_beam.glb");
 
         setupNavigation();
         setupUI();
-        setupSceneView();
         checkAndLoadAssets();
     }
 
@@ -145,55 +140,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         binding.navView.setNavigationItemSelectedListener(this);
         // Default module
         switchModule(R.id.nav_3d_solid);
-    }
-
-    private void setupSceneView() {
-        android.util.Log.d("SceneViewDebug", "setupSceneView called");
-        try {
-            // Guard against Filament engine not yet initialized when SceneView is gone
-            if (binding.sceneView.getCameraNode() != null) {
-                binding.sceneView.getCameraNode().setNearClipPlane(0.1f);
-                binding.sceneView.getCameraNode().setFarClipPlane(1000.0f);
-            } else {
-                android.util.Log.w("SceneViewDebug", "CameraNode is null during setupSceneView");
-            }
-
-            // Using SceneView's engine directly for light configuration if LightNode is problematic,
-            // or adjusting the parameters. Based on common SceneView patterns:
-            
-            // Reverting LightNode implementation to avoid compilation errors and
-            // looking for correct Light setup.
-            // For now, removing the invalid LightNode block to restore compilation,
-            // then focusing on camera position.
-            
-            // Correct implementation of directional light using SceneView v0.10.0 Java API
-            LightNode lightNode = new LightNode(binding.sceneView.getEngine());
-            binding.sceneView.addChild(lightNode);
-            
-            // Set camera position to look at the model at the origin
-            binding.sceneView.getCameraNode().setPosition(new Float3(0.0f, 0.0f, 5.0f));
-            binding.sceneView.getCameraNode().lookAt(new Float3(0.0f, 0.0f, 0.0f), new Float3(0.0f, 1.0f, 0.0f), true);
-
-            loadHelloWorldModel();
-        } catch (Exception e) {
-            android.util.Log.e("SceneViewDebug", "Error in setupSceneView: " + e.getMessage(), e);
-        }
-    }
-
-    private void loadHelloWorldModel() {
-        android.util.Log.d("SceneViewDebug", "loadHelloWorldModel called");
-        ModelNode modelNode = new ModelNode(
-                binding.sceneView.getEngine(),
-                "models/test_beam.glb",
-                true,
-                1.0f,
-                new Float3(0.0f, 0.0f, 0.0f),
-                null,
-                null
-        );
-        binding.sceneView.addChild(modelNode);
-        modelNode.centerModel(new Float3(0.0f, 0.0f, 0.0f));
-        android.util.Log.d("SceneViewDebug", "ModelNode added to SceneView");
     }
 
     @Override
@@ -210,10 +156,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void onTabSelected(TabLayout.Tab tab) {
                 if (tab.getPosition() == 0) {
                     binding.layout3DParams.setVisibility(View.VISIBLE);
-                    binding.sceneView.setVisibility(View.GONE);
+                    binding.sceneViewComposeContainer.setVisibility(View.GONE);
                 } else {
                     binding.layout3DParams.setVisibility(View.GONE);
-                    binding.sceneView.setVisibility(View.VISIBLE);
+                    binding.sceneViewComposeContainer.setVisibility(View.VISIBLE);
                 }
             }
             @Override
@@ -748,19 +694,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void cargarModeloExterno(File file) {
-        if (file.exists()) {
-            ModelNode modelNode = new ModelNode(
-                    binding.sceneView.getEngine(),
-                    file.getPath(),
-                    true,
-                    1.0f,
-                    new Float3(0.0f, 0.0f, 0.0f),
-                    null,
-                    null
-            );
-            binding.sceneView.addChild(modelNode);
-            modelNode.centerModel(new Float3(0.0f, 0.0f, 0.0f));
-        }
+        SceneViewBridgeKt.setSceneViewContent(binding.sceneViewComposeContainer, file.getAbsolutePath());
     }
 
     private void sendTerminalCommand() {

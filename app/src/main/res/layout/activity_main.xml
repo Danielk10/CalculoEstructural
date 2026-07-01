@@ -468,11 +468,10 @@
                         </LinearLayout>
                     </androidx.core.widget.NestedScrollView>
 
-                    <io.github.sceneview.SceneView
-                        android:id="@+id/sceneView"
+                    <androidx.compose.ui.platform.ComposeView
+                        android:id="@+id/sceneViewComposeContainer"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:visibility="gone" />
+                        android:layout_height="match_parent" />
                 </FrameLayout>
             </LinearLayout>
 
