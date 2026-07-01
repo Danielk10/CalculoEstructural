@@ -127,6 +127,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         binding.btnCreateSphere.setOnClickListener(v -> showCreateSphereDialog());
         binding.btnFuse.setOnClickListener(v -> runBooleanOperation(0));
         binding.btnCut.setOnClickListener(v -> runBooleanOperation(1));
+        binding.btnIntersect.setOnClickListener(v -> runBooleanOperation(2));
         
         binding.seekbarMeshDensity.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -347,6 +348,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             boolean success = false;
             if (type == 0) success = OcctBooleanJNI.fuse(fileA.getAbsolutePath(), fileB.getAbsolutePath(), outFile.getAbsolutePath());
             else if (type == 1) success = OcctBooleanJNI.cut(fileA.getAbsolutePath(), fileB.getAbsolutePath(), outFile.getAbsolutePath());
+            else if (type == 2) success = OcctBooleanJNI.intersect(fileA.getAbsolutePath(), fileB.getAbsolutePath(), outFile.getAbsolutePath());
 
             boolean finalSuccess = success;
             runOnUiThread(() -> handlePrimitiveResult(finalSuccess, outFile));
@@ -565,26 +567,53 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 jsonBuilder.append("  \"elements\": [\n");
                 String[] elementLines = elementsText.split("\n");
                 int elementCount = 0;
+                boolean hasBeams = false;
+                boolean hasSolids = false;
+                
                 for (String line : elementLines) {
                     line = line.trim();
                     if (line.isEmpty()) continue;
                     String[] tokens = line.split(",");
                     if (tokens.length < 3) continue;
+                    
                     int id = Integer.parseInt(tokens[0].trim());
-                    int n1 = Integer.parseInt(tokens[1].trim());
-                    int n2 = Integer.parseInt(tokens[2].trim());
-                    model.elements.add(new StructuralModel.Element(id, n1, n2, "W8x31", "Steel"));
+                    String type = "B31";
+                    String elset = "EBEAM";
+                    List<Integer> nodeIds = new ArrayList<>();
+                    
+                    if (tokens.length == 3) {
+                        type = "B31";
+                        elset = "EBEAM";
+                        nodeIds.add(Integer.parseInt(tokens[1].trim()));
+                        nodeIds.add(Integer.parseInt(tokens[2].trim()));
+                        hasBeams = true;
+                    } else if (tokens.length == 5) {
+                        type = "C3D4";
+                        elset = "ESOLID";
+                        nodeIds.add(Integer.parseInt(tokens[1].trim()));
+                        nodeIds.add(Integer.parseInt(tokens[2].trim()));
+                        nodeIds.add(Integer.parseInt(tokens[3].trim()));
+                        nodeIds.add(Integer.parseInt(tokens[4].trim()));
+                        hasSolids = true;
+                    }
+                    
+                    model.elements.add(new StructuralModel.Element(id, nodeIds.get(0), nodeIds.get(1), elset, "Steel"));
 
                     if (elementCount > 0) {
                         jsonBuilder.append(",\n");
                     }
-                    jsonBuilder.append(String.format("    {\"id\": %d, \"type\": \"B31\", \"nodes\": [%d, %d]}", id, n1, n2));
+                    
+                    jsonBuilder.append(String.format("    {\"id\": %d, \"type\": \"%s\", \"elset\": \"%s\", \"nodes\": [", id, type, elset));
+                    for (int i = 0; i < nodeIds.size(); i++) {
+                        jsonBuilder.append(nodeIds.get(i)).append(i == nodeIds.size() - 1 ? "" : ", ");
+                    }
+                    jsonBuilder.append("]}");
                     elementCount++;
                 }
                 jsonBuilder.append("\n  ],\n");
 
                 if (elementCount == 0) {
-                    runOnUiThread(() -> binding.tvStructuralResult.setText("Error: No valid elements parsed. Format: id, node1, node2"));
+                    runOnUiThread(() -> binding.tvStructuralResult.setText("Error: No valid elements parsed. Format: id, n1, n2 or id, n1, n2, n3, n4"));
                     return;
                 }
 
@@ -592,6 +621,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 jsonBuilder.append("  \"materials\": [\n");
                 jsonBuilder.append("    {\"name\": \"Steel\", \"youngModulus\": 210000.0, \"poissonRatio\": 0.3, \"density\": 7850.0}\n");
                 jsonBuilder.append("  ],\n");
+
+                // Sections (Mixed Modeling)
+                jsonBuilder.append("  \"sections\": [\n");
+                boolean firstSec = true;
+                if (hasBeams) {
+                    jsonBuilder.append("    {\"elset\": \"EBEAM\", \"type\": \"BEAM\", \"material\": \"Steel\", \"params\": [0.3, 0.5]}");
+                    firstSec = false;
+                }
+                if (hasSolids) {
+                    if (!firstSec) jsonBuilder.append(",\n");
+                    jsonBuilder.append("    {\"elset\": \"ESOLID\", \"type\": \"SOLID\", \"material\": \"Steel\", \"params\": []}");
+                }
+                jsonBuilder.append("\n  ],\n");
 
                 // Boundary Conditions - Fix first node
                 int firstNodeId = parsedNodeIds.get(0);

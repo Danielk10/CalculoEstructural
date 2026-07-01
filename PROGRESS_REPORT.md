@@ -45,8 +45,9 @@ This document tracks the tasks completed and the current status of the project.
 - [x] **B3: Structural Inp Generator**: Implemented `StructuralInpGenerator` with support for B32 elements.
 - [x] **B4: Diagram Engine**: Implemented `DiagramView` to render BMD, SFD, and AFD diagrams using Android Canvas. Fixed `*SECTION PRINT` error in INP generation.
 - [x] **C1: CAD Primitives**: Implemented `OcctPrimitivesJNI` (Java/C++) to create Box, Cylinder, and Sphere solids using OpenCASCADE.
-- [x] **C2: Boolean Operations**: Implemented `OcctBooleanJNI` (Java/C++) for FUSE and CUT operations using OpenCASCADE.
-- [x] **C3: Ray-Casting & Face Selection**: Implemented basic touch detection in `SceneView`. High-fidelity face picking is in development.
+- [x] **C2: Boolean Operations**: Implemented `OcctBooleanJNI` (Java/C++) for FUSE, CUT, and INTERSECT operations using OpenCASCADE.
+- [x] **C3: Ray-Casting & Face Selection**: Implemented basic touch detection in `SceneView`.
+- [x] **C. Mixed Modeling**: Enhanced `AnalysisModel.cpp` to support multi-element type models (Solids + Beams).
 - [x] **C4: Material Library**: Implemented `materials.json` and `MaterialDatabase.java`.
 - [x] **C5: Mesh Controls**: Integrated mesh density slider to control Gmsh discretization quality.
 - [x] **D1: INP Importer**: Implemented `AbaqusInpImporter` to allow importing external .inp files into the Structural Editor.

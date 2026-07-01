@@ -305,6 +305,7 @@
                                         android:layout_marginTop="4dp">
                                         <Button android:id="@+id/btnFuse" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="FUSE" style="@style/Widget.MaterialComponents.Button.TextButton" android:textColor="#E91E63"/>
                                         <Button android:id="@+id/btnCut" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="CUT" style="@style/Widget.MaterialComponents.Button.TextButton" android:textColor="#E91E63"/>
+                                        <Button android:id="@+id/btnIntersect" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="INT" style="@style/Widget.MaterialComponents.Button.TextButton" android:textColor="#E91E63"/>
                                     </LinearLayout>
                                 </LinearLayout>
                             </com.google.android.material.card.MaterialCardView>

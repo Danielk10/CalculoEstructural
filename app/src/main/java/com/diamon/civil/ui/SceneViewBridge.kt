@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import dev.romainguy.kotlin.math.Float3
-import io.github.sceneview.Scene
+import io.github.sceneview.SceneView
 import io.github.sceneview.node.CubeNode
 import io.github.sceneview.node.ModelNode
 import io.github.sceneview.rememberEngine
@@ -23,7 +23,7 @@ fun SceneViewWrapper(modelPath: String?) {
     val engine = rememberEngine()
     val modelLoader = rememberModelLoader(engine)
     
-    Scene(
+    SceneView(
         modifier = Modifier.fillMaxSize(),
         engine = engine
     ) {

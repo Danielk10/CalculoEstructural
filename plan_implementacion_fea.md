@@ -6,10 +6,10 @@ Motor CalculiX compilado · CalculiX 2.23 + SPOOLES + ARPACK + OpenBLAS + Gmsh +
 ---
 
 ## Progreso del Proyecto
-- **Progreso total estimado:** 90%
-- **Completados:** 28 ítems
-- **En progreso:** 3 ítems
-- **Pendientes:** 2 ítems
+- **Progreso total estimado:** 95%
+- **Completados:** 30 ítems
+- **En progreso:** 2 ítems
+- **Pendientes:** 1 ítem
 
 ---
 
@@ -32,6 +32,10 @@ Motor CalculiX compilado · CalculiX 2.23 + SPOOLES + ARPACK + OpenBLAS + Gmsh +
 - **A1. Pipeline CAD completo:** GmshRunner, MshToInpConverter y flujo en MainActivity integrados.
 - **A2. Structural Result Mapping:** InpGenerator emite *SECTION PRINT y DatParser extrae fuerzas N, V, M.
 - **A3. Integration Testing en dispositivo ARM64:** Verificado en hardware real. App estable.
+- **B. Editor Estructural:** Renderizador interactivo y generador de pórticos completado.
+- **C2. Operaciones Booleanas:** Fuse, Cut e Intersect (OCCT) integradas.
+- **C. Mixed Modeling:** Soporte para modelos mixtos (Sólidos + Vigas) en el core nativo.
+- **D2. PDF Reporting:** Generación de reportes técnicos completa.
 
 ---
 

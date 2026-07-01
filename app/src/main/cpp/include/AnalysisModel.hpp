@@ -16,6 +16,7 @@ struct Node {
 struct Element {
     int id;
     std::string type; // e.g., "C3D8", "B31", "S4"
+    std::string elset;
     std::vector<int> nodeIds;
 };
 
@@ -37,11 +38,19 @@ struct Load {
     double fx, fy, fz;
 };
 
+struct Section {
+    std::string elset;
+    std::string type; // "SOLID", "BEAM"
+    std::string material;
+    std::vector<double> params; // e.g., [width, height] for RECT BEAM
+};
+
 class AnalysisModel {
 public:
     std::map<int, Node> nodes;
     std::map<int, Element> elements;
     std::vector<Material> materials;
+    std::vector<Section> sections;
     std::vector<BoundaryCondition> constraints;
     std::vector<Load> loads;
 
@@ -49,6 +58,7 @@ public:
         nodes.clear();
         elements.clear();
         materials.clear();
+        sections.clear();
         constraints.clear();
         loads.clear();
     }

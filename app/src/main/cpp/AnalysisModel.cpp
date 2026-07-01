@@ -19,7 +19,7 @@ std::string AnalysisModel::toInpString() const {
     // Elements (simplified for prototype)
     for (const auto& pair : elements) {
         const Element& e = pair.second;
-        ss << "*ELEMENT, TYPE=" << e.type << ", ELSET=E" << e.id << "\n";
+        ss << "*ELEMENT, TYPE=" << e.type << ", ELSET=" << (e.elset.empty() ? ("E" + std::to_string(e.id)) : e.elset) << "\n";
         ss << e.id << ", ";
         for (size_t i = 0; i < e.nodeIds.size(); ++i) {
             ss << e.nodeIds[i] << (i == e.nodeIds.size() - 1 ? "" : ", ");
@@ -34,6 +34,20 @@ std::string AnalysisModel::toInpString() const {
         ss << mat.youngModulus << ", " << mat.poissonRatio << "\n";
         ss << "*DENSITY\n";
         ss << mat.density << "\n";
+    }
+
+    // Sections (Mixed Modeling Support)
+    for (const auto& sec : sections) {
+        if (sec.type == "SOLID") {
+            ss << "*SOLID SECTION, ELSET=" << sec.elset << ", MATERIAL=" << sec.material << "\n";
+        } else if (sec.type == "BEAM") {
+            ss << "*BEAM SECTION, ELSET=" << sec.elset << ", MATERIAL=" << sec.material << ", SECTION=RECT\n";
+            for (size_t i = 0; i < sec.params.size(); ++i) {
+                ss << sec.params[i] << (i == sec.params.size() - 1 ? "" : ", ");
+            }
+            ss << "\n";
+            ss << "0, 1, 0\n"; // Default orientation
+        }
     }
 
     // Boundary Conditions
@@ -72,7 +86,7 @@ std::string AnalysisModel::toJson() const {
     // Elements
     for (const auto& pair : elements) {
         const Element& e = pair.second;
-        j["elements"].push_back({{"id", e.id}, {"type", e.type}, {"nodes", e.nodeIds}});
+        j["elements"].push_back({{"id", e.id}, {"type", e.type}, {"elset", e.elset}, {"nodes", e.nodeIds}});
     }
 
     // Materials
@@ -82,6 +96,16 @@ std::string AnalysisModel::toJson() const {
             {"youngModulus", mat.youngModulus},
             {"poissonRatio", mat.poissonRatio},
             {"density", mat.density}
+        });
+    }
+
+    // Sections
+    for (const auto& sec : sections) {
+        j["sections"].push_back({
+            {"elset", sec.elset},
+            {"type", sec.type},
+            {"material", sec.material},
+            {"params", sec.params}
         });
     }
 
@@ -118,6 +142,7 @@ void AnalysisModel::fromJson(const std::string& jsonStr) {
             Element e;
             e.id = item["id"];
             e.type = item["type"];
+            e.elset = item.value("elset", "");
             e.nodeIds = item["nodes"].get<std::vector<int>>();
             elements[e.id] = e;
         }
@@ -131,6 +156,17 @@ void AnalysisModel::fromJson(const std::string& jsonStr) {
             m.poissonRatio = item["poissonRatio"];
             m.density = item["density"];
             materials.push_back(m);
+        }
+    }
+
+    if (j.contains("sections")) {
+        for (const auto& item : j["sections"]) {
+            Section s;
+            s.elset = item["elset"];
+            s.type = item["type"];
+            s.material = item["material"];
+            s.params = item["params"].get<std::vector<double>>();
+            sections.push_back(s);
         }
     }
 

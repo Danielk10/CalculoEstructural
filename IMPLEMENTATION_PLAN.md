@@ -48,7 +48,7 @@ The system is built on a shared C++ NDK core that handles heavy computation, par
 *Goal: Allow geometry creation and manipulation within the app.*
 
 - [x] **CAD Primitives**: Create Box, Cylinder, Sphere via OCCT (Implemented via OcctPrimitivesJNI).
-- [x] **Boolean Engine**: Union (Fuse) and Cut operations (Implemented via OcctBooleanJNI).
+- [x] **Boolean Engine**: Union (Fuse), Cut, and Intersection operations (Implemented via OcctBooleanJNI).
 - [x] **Mesh Controls**: Local refinement and global mesh density parameters (Integrated in MainActivity via GmshRunner).
 - [x] **Material Library**: Predefined material property management (MaterialDatabase.java + materials.json).
 
@@ -64,13 +64,15 @@ The system is built on a shared C++ NDK core that handles heavy computation, par
 
 ---
 
-## 🚀 Phase 4: Advanced Integration & Optimization (IN PROGRESS)
+## 🚀 Phase 4: Advanced Integration & Optimization (SUBSTANTIALLY COMPLETED)
 *Goal: Polish, cross-module support, and performance.*
 
 - [x] **Performance**: Multithreading for meshing and result parsing (ExecutorService in MainActivity).
 - [x] **Abaqus .inp Importer**: High-fidelity Abaqus format compatibility (AbaqusInpImporter.java).
 - [x] **Reporting**: Automated PDF generation with simulation data and result tables (ReportGenerator.java).
-- [ ] **Mixed Modeling**: Support for models containing both Solids and Structural elements.
+- [x] **Mixed Modeling**: Support for models containing both Solids and Structural elements (Implemented in AnalysisModel.cpp).
+- [ ] **Advanced Picking**: High-fidelity ray-casting for face/node selection (Basic implemented, needs refinement).
+
 
 ---
 
